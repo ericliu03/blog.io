@@ -11,7 +11,7 @@ This is a coding problem from Uber onsite interview found [here](https://www.1po
 
 ### Question:
 
-Given a list of pairs (tuples), each of them represents as a edge from a to b if we have (a, b) as an example. A special thing of these edges is that a node will have an edge in this list with all of it's children, which includes not only direct children but also children's children. You can assume the edges given will result in a valid tree.
+Given a list of pairs (tuples), each of them represents as a edge from a to b if we have (a, b) as an example. A node will have edge for not only direct children but also children's children. 
 
 If we have the following tree as an example:
 ```
@@ -26,7 +26,7 @@ If we have the following tree as an example:
  [(A,B), (A,D), (A,E), (A,C), (B,D), (B,E)]
 ```
 
-Use this list to construct a tree and return the root node.
+You can assume the edges given will result in a valid tree. Use this list to construct a tree.
 
 ### Analysis
 
