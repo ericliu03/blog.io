@@ -11,7 +11,7 @@ This is a coding problem from Uber onsite interview found [here](https://www.1po
 
 ### Question:
 
-Given a list of pairs (tuples), each of them represents as a edge from a to b if we have (a, b) as an example. A node will have edge for not only direct children but also children's children. 
+Given a list of pairs (tuples), each of them represents as a edge that connects two nodes in a tree. However, a node will have edge for not only direct children but also children's children. 
 
 If we have the following tree as an example:
 ```
@@ -23,14 +23,16 @@ If we have the following tree as an example:
 ```
  Then the list given it will be
 ```
- [(A,B), (A,D), (A,E), (A,C), (B,D), (B,E)]
+ [(A,A), (A,B), (A,D), (A,E), (A,C), (B,D), (B,E)]
 ```
 
-You can assume the edges given will result in a valid tree. Use this list to construct a tree.
+You can assume the edges given will result in a valid tree, but it's possible that a node only have edges that connects to partial of it's not-direct children. For example, if we remove (A,D) from above list, we should still have a valid tree. 
+
+Use this list to construct a tree.
 
 ### Analysis
 
-Intuitively, we can imagine what we have in the given list is the edges for a directed graph, and what we want to do is to remove the edges that, 1. from a tree's perspective: not connected from a node's parent 2. from a graph perspective: if the graph contains a longer path connecting the same two vertices.
+Intuitively, what we want to do is to remove the edges that, from a tree's perspective, not connected from a node's parent. However, we can also imagine what we have in the given list are the edges for a directed graph, and then we want to discard edges if the graph contains a longer path connecting the same two vertices.
 
 What we have from the list is a **partially ordered set**  (need to confirm if this is correct) of [**DAG** (Directed Acyclic Graph)](https://en.wikipedia.org/wiki/Directed_acyclic_graph), and what we generated is called the [**transitive reduction**](https://en.wikipedia.org/wiki/Transitive_reduction) of the graph. You can also find it [here](https://algs4.cs.princeton.edu/42digraph/) at item 38 in *Web Exercises* section.
 
