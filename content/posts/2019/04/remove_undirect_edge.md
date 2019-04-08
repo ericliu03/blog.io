@@ -11,7 +11,7 @@ This is a coding problem from Uber onsite interview found [here](https://www.1po
 
 ### Question:
 
-Given a list of pairs (tuples), each of them represents as a edge that connects two nodes in a tree. However, a node will have edge for not only direct children but also children's children. 
+Given a list of pairs (tuples), each of them represents a connection from parent to it's child in a tree. In this list, nodes will have edges not only for their direct children, but also all of it's descendants (i.e. children's children, and their children etc). 
 
 If we have the following tree as an example:
 ```
@@ -23,28 +23,26 @@ If we have the following tree as an example:
 ```
  Then the list given it will be
 ```
- [(A,A), (A,B), (A,D), (A,E), (A,C), (B,D), (B,E)]
+ [(A,B), (A,D), (A,E), (A,C), (B,D), (B,E)]
 ```
 
-You can assume the edges given will result in a valid tree, but it's possible that a node only have edges that connects to partial of it's not-direct children. For example, if we remove (A,D) from above list, we should still have a valid tree. 
-
-Use this list to construct a tree.
+You can assume the tuples given will result in a valid tree. Use this list to construct a tree.
 
 ### Analysis
 
-Intuitively, what we want to do is to remove the edges that, from a tree's perspective, not connected from a node's parent. However, we can also imagine what we have in the given list are the edges for a directed graph, and then we want to discard edges if the graph contains a longer path connecting the same two vertices.
+Intuitively, what we want to do is to remove the connections *a -> b* while a is not the node's parent in the tree. The way to distinguish those connections is to find out if there's another way to connect a -> b. If there is any, saying a -> a' -> b, then we know b's parent is a' instead a then we should remove a -> b.
 
-What we have from the list is a **partially ordered set**  (need to confirm if this is correct) of [**DAG** (Directed Acyclic Graph)](https://en.wikipedia.org/wiki/Directed_acyclic_graph), and what we generated is called the [**transitive reduction**](https://en.wikipedia.org/wiki/Transitive_reduction) of the graph. You can also find it [here](https://algs4.cs.princeton.edu/42digraph/) at item 38 in *Web Exercises* section.
+From a different perspective, if we imagine the tuples in the list are the edges in a directed graph, then we want is a [**transitive reduction**](https://en.wikipedia.org/wiki/Transitive_reduction) of the original graph (represented by all the edges). The transitive reduction of a graph contains *the fewest possible edges that has the same reachability relation as the original graph, by discarding the edges u → v for which G also contains a longer path connecting the same two vertices.* In this way, the transitive reduction we generated will be the tree the question asked.
 
-The transitive reduction contains *the fewest possible edges that has the same reachability relation as the original graph by discarding the edges u → v for which G also contains a longer path connecting the same two vertices.* 
+1. list given is a **partially ordered set** of a [**DAG** (Directed Acyclic Graph)](https://en.wikipedia.org/wiki/Directed_acyclic_graph)
+1. You can also find it [here](https://algs4.cs.princeton.edu/42digraph/) at item 38 in *Web Exercises* section.
+1. This question is a **tree** problem, but actually it's asking for a solution that generates the transitive reduction of a **graph**. It's important to *look beyond the surface*.
 
-This question starts from the tree's perspective, but actually it's asking for an graph algorithm that generate the transitive reduction with a graph that only have 1 zero-degree node. 
-
-### Coding
+### Algorithm
 
 #### Method 0: DFS
 
-Following the intuitive algorithm, we could loop through every node in the graph and remove a edge to a child if there are other paths (and will be longer) that connect to that child.
+Following the intuitive algorithm, we could loop through every node **u** in the graph and remove the edges **u->v** if there are other paths that connect from **u** to **v**.
 
 ```python
 import collections
@@ -86,7 +84,9 @@ def generate_tree0(edges):
 
 #### Method 1: Topological Sort
 
-Since it's a direct graph and we want to remove the edges that connects u->v if there are other longer paths, we can use topological sort to go through each node in this graph. In each 0 in degree node u, for every child v, if there's any other in degree edge to v, then it means there will be longer path(s) that connects to v, then the edge u->v should be discarded. 
+Since it's a direct graph and we want to remove the edges that connects u->v if there are other longer paths, we can use [Topological sort](https://en.wikipedia.org/wiki/Topological_sorting) to go through each node in this graph. In the process of sorting, in each round we will have node **u** that have no edge from others to u (i.e. 0 [indegree](https://en.wikipedia.org/wiki/Directed_graph#Indegree_and_outdegree)). For every one of it's neighbors **v** it connects *to*, if there's any other nodes **x** connects **to** v, then it means there will be longer path(s) that connects from **u** to **v**, then the edge u->v should be discarded. 
+
+We will use two maps to keep track of the indegrees and outdegrees of a node, and do edits in the process of sorting. 
 
 
 ```python
