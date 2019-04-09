@@ -18,6 +18,9 @@ googleAnalytics = ""
 defaultContentLanguage = "en"
 defaultContentLanguageInSubdir = false
 
+[taxonomies]
+   tag = "tags"
+   category = "categories"
 
 
 [blackfriday]
