@@ -2,6 +2,7 @@ theme = "aether"
 baseURL = "https://ericliu03.github.io/"
 languageCode = "en-us"
 title = "Yang's Blog"
+rssLimit = 10
 
 enableEmoji = true
 footnotereturnlinkcontents = "<sup>^</sup>"
