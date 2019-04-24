@@ -1,0 +1,49 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts - Yang&#39;s Blog</title>
+    <link>https://ericliu03.github.io/posts/</link>
+    <description>Recent content in Posts on Yang&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 23 Apr 2019 21:23:24 -0700</lastBuildDate>
+    
+        <atom:link href="https://ericliu03.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Minimum Point to Traverse Graph</title>
+      <link>https://ericliu03.github.io/posts/2019/04/minimum_point_to_traverse_graph/</link>
+      <pubDate>Wed, 10 Apr 2019 15:38:14 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/minimum_point_to_traverse_graph/</guid>
+      <description></description>
+    </item><item>
+      <title>Video Stitching</title>
+      <link>https://ericliu03.github.io/posts/2019/04/video_stitching/</link>
+      <pubDate>Mon, 08 Apr 2019 20:01:29 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/video_stitching/</guid>
+      <description></description>
+    </item><item>
+      <title>Pour Water</title>
+      <link>https://ericliu03.github.io/posts/2019/04/pour_water/</link>
+      <pubDate>Sun, 07 Apr 2019 14:51:09 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/pour_water/</guid>
+      <description></description>
+    </item><item>
+      <title>Create tree from tuples</title>
+      <link>https://ericliu03.github.io/posts/2019/04/remove_undirect_edge/</link>
+      <pubDate>Sat, 06 Apr 2019 16:55:31 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/remove_undirect_edge/</guid>
+      <description></description>
+    </item><item>
+      <title>Interviews</title>
+      <link>https://ericliu03.github.io/posts/2019/04/interviews/</link>
+      <pubDate>Fri, 05 Apr 2019 09:20:41 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/interviews/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

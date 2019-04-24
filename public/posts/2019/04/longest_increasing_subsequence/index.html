@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Longest Increasing Subsequence (Chinese) &middot; Yang&#39;s Blog</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://ericliu03.github.io/css/main.min.css" />
+  
+  
+</head>
+  <body class="single-body">
+    <nav class="nav-bar side-padding">
+  <h1 class="nav-header"><a href="https://ericliu03.github.io/" class="nav-text">Yang&#39;s Blog</a></h1>
+  <div class="hamburger-menu">
+    <button onclick="hamburgerMenuPressed.call(this)" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="menu" class="hamburger-menu-overlay">
+      <li><a href="https://ericliu03.github.io/" class="hamburger-menu-overlay-link">Home</a></li>
+      <li><a href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="hamburger-menu-overlay-link">Pour Water</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main class="content side-text-padding">
+      <article class="post ">
+        <header class="post-header">
+        	<h1 class="post-title">Longest Increasing Subsequence (Chinese)</h1>
+          <p class="post-date">Posted <time datetime="2019-04-15">Apr 15, 2019</time></p>
+        </header>
+        
+        
+
+<h2 id="question">Question</h2>
+
+<p>This question is from <a href="https://leetcode.com/problems/longest-increasing-subsequence/" target="_blank">Leetcode 300</a></p>
+
+<p>Given an unsorted array of integers, find the length of longest increasing subsequence.</p>
+
+<h3 id="examples">Examples</h3>
+
+<pre><code>Input: [10,9,2,5,3,7,101,18]
+Output: 4 
+Explanation: The longest increasing subsequence is [2,3,7,101], therefore the length is 4. 
+</code></pre>
+
+<h3 id="note">Note</h3>
+
+<ol>
+<li>There may be more than one LIS combination, it is only necessary for you to return the length.</li>
+<li>Your algorithm should run in \( O(N^2) \) complexity.</li>
+</ol>
+
+<h3 id="method-1">Method 1</h3>
+
+<h4 id="analysis">Analysis</h4>
+
+<p>可以使用Brute force的方法来解决这个问题。
+具体来说我们需要试一下所有可能的组合：对于每一个数<strong>x</strong>，他本身加上他后面的任意一个比他大的数<strong>y</strong>都可以组成一个increasing subsequence。如果我们已经知道了以<strong>y</strong>开头（对，就是recursion的思想），最长能组成的subsequence的长度，我们就知道了以<strong>x</strong>和<strong>y</strong>开头的最长的长度。但是选y只是以x开头的increasing subsequence的可能性之一。或许有一个数字<strong>z</strong>也符合条件（比x大，在x的后面），如果以z开头的increasing subsequence 的最长长度比以y开头的长，那么对于x来说，更好地选项就是接上z，以xz开头。 所以，为了知道最长的到底是那个，需要把后面所有符合条件的数都拿来试一下，然后选那个最长的。
+时间复杂度是\( O(N!) \)：对于第一个数字，需要进行 (n-1) * (n-2) * &hellip; * 1，第二个是 (n-2) * (n-3) * &hellip; * 1, 第n个是1。</p>
+
+<p>Leetcode也提供了<a href="https://leetcode.com/problems/longest-increasing-subsequence/solution/" target="_blank">另一种BF</a>的方法。那个方法对于recursion function的定义不同，时间复杂度也只有O(2^n)。原因是相比于上面的方法，在每个点只进行了两次recursion call，而不是n次。</p>
+
+<p>你应该能发现我们recursion function的定义，是求以当前数字作为开头，最长的increasing subsequence的长度。既然是最长，那么也就是说只要给定start位置和list，这个结果就只有一个。然而在上面的算法中，对于同一个点我们计算了很多次（对于每个数，我们计算的次数等于他前面比他小的数字的数量）。所以我们可以把计算的结果存起来，只计算一次。</p>
+
+<p>那么时间复杂度就变成了\( O(N^2) \)，因为对于每个点，我们依然要看一下剩下符合要求的点的最长长度然后计算出自己的长度。</p>
+
+<h4 id="code">Code</h4>
+
+<pre><code class="language-python">class Solution:
+    def lengthOfLIS(self, nums: List[int]) -&gt; int:
+        if not nums:
+            return 0
+        self.memo = {}
+        return max([self.helper(i, nums) for i in range(len(nums))])
+    
+    def helper(self, start, nums):
+        if start not in self.memo:
+            result = 0
+            for i in range(start+1, len(nums)):
+                if nums[i] &gt; nums[start]:
+                    result = max(result, self.helper(i, nums))
+            self.memo[start] = result+1
+            
+        return self.memo[start]
+
+</code></pre>
+
+<h3 id="method-2">Method 2</h3>
+
+<h4 id="analysis-1">Analysis</h4>
+
+<p>一般来说recursion的问题都可以优化成DP的解法，此题就是如此。我们上面说<strong>这里recursion function的定义，是求以当前数字作为开头，最长的increasing subsequence的长度</strong>。在recursion中， 我们是从前往后call recursion function，但是实际计算是从后往前。换句话说，我们每一层recursion都需要后面一层的结果，所以第一个真正计算出的结果是最后一层，也就是<strong>以最后一个数字作为开头的最长的长度</strong>（那便是1啦）。如果按照真正计算的顺序（即从右向左）计算，然后记录下来计算结果后给后面的计算使用，就是DP的解法。</p>
+
+<p>在LC中提供的DP解法是反过来，从左向右计算，随之而变化的是存的每个点的数据的定义，也变为<strong>以当前数字为结尾，最长increasing subsequence的长度</strong>。所以对于每一个数字，我们都需要看一下符合条件的数，也即在他前面且比他小的数（可以看到是正好反过来的），找出最长的作为当前数字的结果。从前往后是自然而然的顺序，但是如果是用BF的方法推导过来，却是需要转换一下才可。</p>
+
+<h4 id="code-1">Code</h4>
+
+<pre><code class="language-python">def lengthOfLIS(nums):
+    if not nums:
+        return 0
+
+    dp = [1] * len(nums)
+
+    for hi in range(len(nums)):
+        for lo in range(hi):
+            if nums[lo] &lt; nums[hi]:
+                dp[hi] = max(dp[hi], dp[lo] + 1)
+    return max(dp)
+</code></pre>
+
+<h3 id="follow-up-1">Follow up 1</h3>
+
+<h4 id="question-1">Question</h4>
+
+<p>From <a href="https://leetcode.com/problems/number-of-longest-increasing-subsequence/" target="_blank">Leetcode 673</a>:
+Given an unsorted array of integers, find the number of longest increasing subsequence.</p>
+
+<h4 id="examples-1">Examples</h4>
+
+<pre><code>Example 1:
+Input: [1,3,5,4,7]
+Output: 2
+Explanation: The two longest increasing subsequence are [1, 3, 4, 7] and [1, 3, 5, 7].
+Example 2:
+Input: [2,2,2,2,2]
+Output: 5
+Explanation: The length of longest continuous increasing subsequence is 1, and there are 5 subsequences' length is 1, so output 5.
+</code></pre>
+
+<h4 id="analysis-2">Analysis</h4>
+
+<p>这个题目和上面题目唯一不同的地方就是之前的是求最长的长度，这个是求拥有最长长度的subsequence有多少个。如果你walk through了之前的DP解法就会发现，同样长度的结果的确可能遇到过多个。比如我们在例子1中最后一个数字7的时候，在index为2和3（就是数字5和4）时，DP[2]和DP[3]都应该等于3，因为135和134长度都为3。那么在上面DP解法第十行的<code>dp[j] = max(dp[j], dp[i] + 1)</code>就是说明dp[j]等于dp[i]+1。</p>
+
+<p>在本题目中我们需要记录下来遇到这种情况的数量，也就是在每一位不仅记录以当前为结尾数字的subsequence的最大长度，也记录有此长度的不同subsequence有多少个。这样一来，最后的时候我们就可以使用整个dp数组中最长的那个长度，作为整个数组的最长度，再用这个长度去找总共这个长度的subsequence有多少个。</p>
+
+<h4 id="code-2">Code</h4>
+
+<pre><code class="language-python">def numberOfLIS(nums):
+        if not nums:
+            return 0
+        
+        dp = [1] * len(nums)
+        counts = [1] * len(nums)
+        
+        for hi in range(len(nums)):
+            for lo in range(hi):
+                if nums[lo] &lt; nums[hi]:
+                    if dp[hi] &lt; dp[lo] + 1:
+                        dp[hi] = dp[lo] + 1
+                        counts[hi] = counts[lo]
+                    elif dp[hi] == dp[lo] + 1:
+                        counts[hi] += counts[lo]
+
+        max_len  = max(dp)
+        return sum([counts[i] for i in range(len(nums)) if dp[i] == max_len])
+</code></pre>
+
+<h3 id="follow-up-2">Follow up 2</h3>
+
+<h4 id="question-2">Question</h4>
+
+<p>From <a href="https://leetcode.com/problems/longest-arithmetic-sequence/" target="_blank">Leetcode 1027</a>:
+Given an array A of integers, return the length of the longest arithmetic subsequence in A.</p>
+
+<p>Recall that a subsequence of A is a list <code>A[i_1], A[i_2], ..., A[i_k]</code> with <code>0 &lt;= i_1 &lt; i_2 &lt; ... &lt; i_k &lt;= A.length - 1</code>, and that a sequence B is arithmetic if <code>B[i+1] - B[i]</code> are all the same value (for <code>0 &lt;= i &lt; B.length - 1</code>).</p>
+
+<h4 id="examples-2">Examples</h4>
+
+<pre><code>Example 1
+Input: [9,4,7,2,10]
+Output: 3
+Explanation: 
+The longest arithmetic subsequence is [4,7,10].
+
+Example 2:
+Input: [20,1,15,3,10,5,8]
+Output: 4
+Explanation: 
+The longest arithmetic subsequence is [20,15,10,5].
+</code></pre>
+
+<h4 id="analysis-3">Analysis</h4>
+
+<p>看过了上面这么多题目和解法，看到这应该有感觉到需要用类似的方法做。和原题唯一的区别就是条件：原题的条件是右边的数大于左边的数，此题的条件是右边的数减左边的数等于一个差值。这个差值是由subsequence的头两个数决定的。同样的，我们可以用一个数组<code>dp[]</code>来存以当前数字为结尾的subsequence的最长长度，但不同的是对于不一样的差值可以会有相同或者不同的最长长度，比如例子1中，以7结尾，差值为-2时，长度为2，差值为3时长度也为2（未出现的差值我们可以不记录）。在比如当到了10的时候，差值为3是就是3（接上了7），其他的（比如1，6等等）最长的只有2了。所以我们可以想到，对于每一个数字的每一种可能的差值，我们都需要记录下来其最长subsequence的长度，以备后面的数字使用。</p>
+
+<pre><code class="language-python">def longestArithSeqLength(nums):
+    dp = [collections.defaultdict(int) for _ in range(len(nums))]
+    result = 0
+    
+    for hi in range(len(nums)):
+        for lo in range(hi):
+            diff = nums[hi] - nums[lo]
+            dp[hi][diff] = max(dp[hi][diff], dp[lo][diff] + 1)
+            result = max(result, dp[hi][diff])        
+    return result + 1	
+
+</code></pre>
+
+<h3 id="后记">后记</h3>
+
+<p>这篇文章其实是收到了最后一个题目（follow up2）的启发，是在做LC contest的时候遇到的。回忆起来，当时感觉题目有点熟悉，但没想到和原题的关联。当时只想到了BF算法，自然也超时了。理论上用BF加memo的方法也可以做，但是因为加入了diff的缘故导致稍微有点复杂，就被绕晕了。想要思路清晰的快速解题，还是要熟练啊</p>
+
+      </article>
+      <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ericliu03-github" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </main>
+    <nav class="end-nav side-padding">
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/posts/2019/04/inorder_predecessor/" class="card blog-card" rel="bookmark" >
+    
+  <article class="card-body">
+    <h2 class="card-title">Inorder Predecessor</h2>
+    <p class="card-text"></p>
+    <div class="card-subtext muted-text">
+      <p>Posted <time datetime="2019-04-13 413:00">Apr 13, 2019</time></p>
+      
+    </div>
+  </article>
+</a>
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/" class="card home-card" style="background-image: url( https://ericliu03.github.io/img/grey-cloud.jpg )" rel="bookmark" >
+  Home
+</a>
+    </nav>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script src="https://ericliu03.github.io/js/core.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+  </body>
+</html>

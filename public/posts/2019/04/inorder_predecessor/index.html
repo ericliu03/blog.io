@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Inorder Predecessor &middot; Yang&#39;s Blog</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://ericliu03.github.io/css/main.min.css" />
+  
+  
+</head>
+  <body class="single-body">
+    <nav class="nav-bar side-padding">
+  <h1 class="nav-header"><a href="https://ericliu03.github.io/" class="nav-text">Yang&#39;s Blog</a></h1>
+  <div class="hamburger-menu">
+    <button onclick="hamburgerMenuPressed.call(this)" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="menu" class="hamburger-menu-overlay">
+      <li><a href="https://ericliu03.github.io/" class="hamburger-menu-overlay-link">Home</a></li>
+      <li><a href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="hamburger-menu-overlay-link">Pour Water</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main class="content side-text-padding">
+      <article class="post ">
+        <header class="post-header">
+        	<h1 class="post-title">Inorder Predecessor</h1>
+          <p class="post-date">Posted <time datetime="2019-04-13">Apr 13, 2019</time></p>
+        </header>
+        
+        
+
+<h2 id="question">Question</h2>
+
+<p>Given a node in a binary tree, return the inorder predecessor of that node. If it doesn&rsquo;t exist, return null. Both input and output should be node objects.</p>
+
+<p>Node is given as an object with pointers to it&rsquo;s left child, right child and parent.</p>
+
+<h3 id="examples">Examples</h3>
+
+<h4 id="example-1">Example 1</h4>
+
+<pre><code>     A
+    / \
+   B   C
+  / \
+ D   E
+    /
+   F
+
+In order traversal: DBFEAC
+If give A, then return should be E. 
+If give C, should return A. 
+If give F, should return B. 
+If give D, return null.
+</code></pre>
+
+<h2 id="algorithm">Algorithm</h2>
+
+<h4 id="method-1">Method 1</h4>
+
+<h4 id="analysis">Analysis</h4>
+
+<p>First, there are <a href="https://en.wikipedia.org/wiki/Tree_traversal" target="_blank">several ways</a> to traverse a tree, and in the problem it&rsquo;s using in-order traversal. Basically, in-order traversal is to &ldquo;display root node at <em>in</em> position&rdquo;, i.e. 1. display left subtree, display root and display right sub tree. Something like this: <strong>[left-subtree-inorder-list] + root + [right-subtree-inorder-list]</strong></p>
+
+<p>For this question, the easiest way is to find the root of the tree using the pointer to parent in each node, and do a in-order traversal to generate a list. The time and space complexity would be O(n). Can we do better?</p>
+
+<h4 id="method-2">Method 2</h4>
+
+<h4 id="analysis-1">Analysis</h4>
+
+<p>We have the pointer to parents, so we should be able to go anywhere in the graph. The question is where to go?</p>
+
+<p>Let&rsquo;s say <strong>X</strong> is the node given:</p>
+
+<ul>
+<li>Case 1: if X has left child as <strong>A</strong> in example. Then we are sure it&rsquo;s predecessor is in it&rsquo;s left subtree, and it should be the last node of the subtree&rsquo;s inorder list. The last node in the in-order traversal of a tree will be the right most node in the tree. As a result, <strong>we go left, and go right until no right child.</strong></li>
+<li>Case 2: if X doesn&rsquo;t have left child, it means in the subtree where X is the root, X is the first node in it&rsquo;s inorder list. We have to find it&rsquo;s predecessor outside of this subtree. So thinking about X&rsquo;s parent <strong>Y</strong>,
+
+<ul>
+<li>Case 2.1: if X is Y&rsquo;s right child as <strong>C</strong> in example, Y will the X&rsquo;s predecessor: X is the first node (in-order) in Y&rsquo;s right subtree.</li>
+<li>Case 2.2: if X is Y&rsquo;s left child as <strong>F</strong> in example, then Y will not be the predecessor: Y&rsquo;s right subtree plus Y will be after X in the in-order list. <strong>X will still be the first node in the inorder list that generated from the subtree with Y as the root</strong>. Then if we go one level up to Y&rsquo;s parent <strong>Z</strong>, it will be a similar situation: if Y is Z&rsquo;s left child, Z plus all the nodes in Z&rsquo;s right subtree will be after Y, and thus X, in the inorder list. We have to go up, until we meet a case like case 2.1, where <strong>Y*</strong> is <strong>Z*&rsquo;s</strong> right child. In this case, in subtree with Z* as root, Z* will be in the middle, and X is the first node in the inorder list of Z*&rsquo;s right subtree, which means X&rsquo;s predecessor is Z*.</li>
+<li>Case 2.3: As <strong>D</strong> in example, If we can&rsquo;t find a node like Z* and we don&rsquo;t have a &ldquo;parent&rdquo; to go up any more, then it means X is the first node in the inorder list and we should return null.</li>
+</ul></li>
+</ul>
+
+<h4 id="code">Code</h4>
+
+<pre><code class="language-python">def inorder_predecessor(node):
+    if node is None:
+        return None
+
+    if node.left is not None:
+        curr = node.left
+        while curr.right:
+            curr = curr.right
+        return curr
+    else:
+        while node.parent:
+            if node.parent.right == node:
+                return node.parent
+            else:
+                node = node.parent
+        return None
+
+class Node:
+    def __init__(self, val, parent):
+        self.val = val
+        self.parent = parent
+        self.left = None
+        self.right = None
+
+    def __str__(self):
+        return self.val
+</code></pre>
+
+      </article>
+      <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ericliu03-github" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </main>
+    <nav class="end-nav side-padding">
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/posts/2019/04/minimum_point_to_traverse_graph/" class="card blog-card" rel="bookmark" >
+    
+  <article class="card-body">
+    <h2 class="card-title">Minimum Point to Traverse Graph</h2>
+    <p class="card-text"></p>
+    <div class="card-subtext muted-text">
+      <p>Posted <time datetime="2019-04-10 410:00">Apr 10, 2019</time></p>
+      
+    </div>
+  </article>
+</a>
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/" class="card home-card" style="background-image: url( https://ericliu03.github.io/img/grey-cloud.jpg )" rel="bookmark" >
+  Home
+</a>
+    </nav>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script src="https://ericliu03.github.io/js/core.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+  </body>
+</html>

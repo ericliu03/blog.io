@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Two Pass for Min/Max/Sum/Product &middot; Yang&#39;s Blog</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://ericliu03.github.io/css/main.min.css" />
+  
+  
+</head>
+  <body class="single-body">
+    <nav class="nav-bar side-padding">
+  <h1 class="nav-header"><a href="https://ericliu03.github.io/" class="nav-text">Yang&#39;s Blog</a></h1>
+  <div class="hamburger-menu">
+    <button onclick="hamburgerMenuPressed.call(this)" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="menu" class="hamburger-menu-overlay">
+      <li><a href="https://ericliu03.github.io/" class="hamburger-menu-overlay-link">Home</a></li>
+      <li><a href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="hamburger-menu-overlay-link">Pour Water</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main class="content side-text-padding">
+      <article class="post ">
+        <header class="post-header">
+        	<h1 class="post-title">Two Pass for Min/Max/Sum/Product</h1>
+          <p class="post-date">Posted <time datetime="2019-04-23">Apr 23, 2019</time></p>
+        </header>
+        
+        
+
+<p>今天我们讲解一种算法思想。这种方法一般使用在需要把整个数组分成2份的情况，求这两份组成的是最大、最小、和最大之类的。下面我们来看三道由易到难的题目。</p>
+
+<h2 id="question">Question</h2>
+
+<p><a href="https://leetcode.com/problems/product-of-array-except-self" target="_blank">Leetcode 238: Product of Array Except Self</a></p>
+
+<p>Given an array <code>nums</code> of n integers where n &gt; 1,  return an array <code>output</code> such that <code>output[i]</code> is equal to the product of all the elements of <code>nums</code> except <code>nums[i]</code>.</p>
+
+<h3 id="examples">Examples</h3>
+
+<pre><code>Input:  [1,2,3,4]
+Output: [24,12,8,6]
+</code></pre>
+
+<h4 id="follow-up">Follow up:</h4>
+
+<ol>
+<li>Please solve it without division and in O(n).</li>
+<li>Could you solve it with constant space complexity? (The output array does not count as extra space for the purpose of space complexity analysis.)</li>
+</ol>
+
+<h2 id="solution">Solution</h2>
+
+<h3 id="method-1">Method 1</h3>
+
+<p>求全部数字的乘积<code>mul</code>，然后生成output的时候把<code>mul</code>除以当前数字就是结果。time complexity是O(n)，但是用到了除法。</p>
+
+<h3 id="method-2">Method 2</h3>
+
+<p>为了不用除法我们可以对每个数字都遍历一边他左边和右边的数字求乘积，但是是O(n2)。</p>
+
+<h3 id="method-3">Method 3</h3>
+
+<p>我们扫两遍数组，计算出两个数组<code>left[i]</code> 和 <code>right[i]</code>，分别是从0到i和从i到n-1的累积乘积。在计算结果时对于每个数计算<code>left[i-1]*right[i+1]</code>即可。没有使用除法，也是O(n)。但是用了O(n)的space</p>
+
+<h3 id="method-4">Method 4</h3>
+
+<p>既然output不算做extra space，那么我们可以利用他当做left，然后在计算right数组的同时计算结果。这样就满足了所有follow up 条件。</p>
+
+<h4 id="code">Code</h4>
+
+<p>我们这里只写method 4 的code了。</p>
+
+<pre><code class="language-python">def productExceptSelf(nums):
+    left = []
+    
+    curr = 1
+    for i in range(len(nums)):
+        curr *= nums[i]
+        left.append(curr)
+    
+    curr = 1
+    for i in range(len(nums)-1,0,-1):
+        left[i] = left[i-1] * curr
+        curr *= nums[i]
+    left[0] = curr
+    
+    return left
+
+</code></pre>
+
+<h2 id="question-2">Question 2</h2>
+
+<p><a href="https://leetcode.com/problems/trapping-rain-water/" target="_blank">Leetcode 42: Trapping Rain Water</a></p>
+
+<p>Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it is able to trap after raining.</p>
+
+<h3 id="example">Example</h3>
+
+<p><img class="special-img-class" style="width:50%" src="/img/monotone_stack_img2.png" />
+The above elevation map is represented by array <code>T=[0,1,0,2,1,0,1,3,2,1,2,1]</code>. In this case, 6 units of rain water (blue section) are being trapped.</p>
+
+<pre><code>Input: [0,1,0,2,1,0,1,3,2,1,2,1]
+Output: 6
+</code></pre>
+
+<h2 id="solution-1">Solution</h2>
+
+<h3 id="method-1-1">Method 1</h3>
+
+<p>这题我们之前在monotone stack中讲解了一种解法，我们这次来看two pass如何使用在这道题上。</p>
+
+<p>从题目出发，我们需要找出每个点上可以存的水的数量（高度），能存多高取决于这个点左右两边最高的高度，也就是边界高度。但是相邻的左右两个点未必是其边界，我们需要找左右两边的最高的高度。所以我们可以扫描两边数组，找出对于位置<code>i</code>左边的和右边的最高的elevation的高度。</p>
+
+<h4 id="code-1">Code</h4>
+
+<pre><code class="language-python">def trap(heights):
+    n = len(heights)
+    left = right = [0] * n
+    l_max = r_max = 0
+    result = 0
+    
+    for i in range(n):
+        l_max = max(l_max, heights[i])
+        r_max = max(r_max, heights[n-1 - i])
+        left[i] = l_max
+        right[n-1 - i] = r_max
+    
+    for i in range(n):
+        water = min(left[i], right[i]) - heights[i]
+        result += water if water &gt; 0 else 0
+    
+    return result
+</code></pre>
+
+<h2 id="question-3">Question 3</h2>
+
+<p><a href="https://leetcode.com/problems/maximum-sum-of-two-non-overlapping-subarrays/" target="_blank">Leetcode 1031: Maximum Sum of Two Non-Overlapping Subarrays</a></p>
+
+<p>Given an array A of non-negative integers, return the maximum sum of elements in two non-overlapping (contiguous) subarrays, which have lengths L and M.  (For clarification, the L-length subarray could occur before or after the M-length subarray.)</p>
+
+<p>Formally, return the largest V for which <code>V = (A[i] + A[i+1] + ... + A[i+L-1]) + (A[j] + A[j+1] + ... + A[j+M-1])</code>and either:<code>0 &lt;= i &lt; i + L - 1 &lt; j &lt; j + M - 1 &lt; A.length</code>, or <code>0 &lt;= j &lt; j + M - 1 &lt; i &lt; i + L - 1 &lt; A.length</code>.</p>
+
+<h3 id="examples-1">Examples:</h3>
+
+<p>Example 1:</p>
+
+<pre><code>Input: A = [0,6,5,2,2,5,1,9,4], L = 1, M = 2
+Output: 20
+Explanation: One choice of subarrays is [9] with length 1, and [6,5] with length 2.
+</code></pre>
+
+<p>Example 2:</p>
+
+<pre><code>Input: A = [3,8,1,3,2,1,8,9,0], L = 3, M = 2
+Output: 29
+Explanation: One choice of subarrays is [3,8,1] with length 3, and [8,9] with length 2.
+</code></pre>
+
+<p>Example 3:</p>
+
+<pre><code>Input: A = [2,1,5,6,0,9,5,0,3,8], L = 4, M = 3
+Output: 31
+Explanation: One choice of subarrays is [5,6,0,9] with length 4, and [3,8] with length 3.
+</code></pre>
+
+<h2 id="solution-2">Solution</h2>
+
+<h3 id="method-1-2">Method 1</h3>
+
+<p>题目形容的有点难懂，简单来说就是在给的array中找出两个不重叠的长度为L和M的subsequence，他们的和最大。L和M的两个subsequence元素的加入让题目复杂了一些，但是仔细一想两个不重叠的subsequence，其实也可以看做是在<code>index = i</code>处的左右两边的两个数组。那么这样理解之后解法其实就与上面的题目一样了，只是元素多了一点：</p>
+
+<ol>
+<li>我们从左往右，找出在每个点<code>i</code>处，左边为L长度和左边为M长度的最大值，放在两个数组里。</li>
+<li>再从右往左，找出左边为M和左边为L长度的放到另外两个数组中。</li>
+</ol>
+
+<p>代码可以参考一下<a href="https://leetcode.com/problems/maximum-sum-of-two-non-overlapping-subarrays/discuss/278727/C%2B%2B-O(N)-buysell-stock-2-times" target="_blank">这里</a></p>
+
+<h3 id="method-2-1">Method 2</h3>
+
+<p>虽然method 1我们存了4个数组出来，但其实和Q1M3的解法是相同的。下面我们做一些类似于Q1M4一样的优化。</p>
+
+<ol>
+<li>和Q1M4一样，在第二遍从右往左扫描时直接计算结果。（节省一半储存和计算结果的一遍扫描）</li>
+<li>不算最大值，算cumulative sum。subsequence的sum直接使用减法计算<code>sum_left_to_right = A[left] - A[right]</code>。最大值在扫描时计算。（再节省一半储存）</li>
+</ol>
+
+<p>因为题目的特性，我们可以在第二遍依然从左往右走，不断update两个变量l_left, m_left,分别为左边长度为l和m的sequence的sum的最大值。扫描的同时计算出每一个A[i-L]和A[i-M]的值，作为右边对应的长度为M和L的值。求和即为可能结果，因为左边是max，右边又扫描到了每一个长度为L和M的sum
+，所以最大的和一定就是结果。</p>
+
+<h4 id="code-2">Code</h4>
+
+<pre><code class="language-python">def maxSumTwoNoOverlap(A, L, M):
+    for i in range(1, len(A)):
+        A[i] += A[i - 1]
+
+    l_left = A[L - 1]
+    m_left = A[M - 1]
+    result = A[L + M - 1]
+
+    for i in range(L + M, len(A)):
+        l_left = max(l_left, A[i - M] - A[i - M - L])
+        m_left = max(m_left, A[i - L] - A[i - L - M])
+
+        l_right = A[i] - A[i - L]
+        m_right = A[i] - A[i - M]
+
+        result = max(result, l_left + m_right, m_left + l_right)
+
+    return result
+</code></pre>
+
+<h2 id="summary">Summary</h2>
+
+<p>总的来说这个解法就是对给定的数据做一些预处理，然后在处理之后的数据上求需要的结果。</p>
+
+<h2 id="reference">Reference</h2>
+
+<ol>
+<li>more questions:
+
+<ol>
+<li><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/" target="_blank">Leetcode 123: Best Time to Buy and Sell Stock III</a>, <a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/discuss/39665/Java-solution-with-just-two-traverses." target="_blank">solution</a></li>
+</ol></li>
+<li><a href="https://leetcode.com/problems/maximum-sum-of-two-non-overlapping-subarrays/discuss/278727/C%2B%2B-O(N)-buysell-stock-2-times" target="_blank">Q3解法1</a></li>
+<li><a href="https://leetcode.com/problems/maximum-sum-of-two-non-overlapping-subarrays/discuss/278251/JavaC%2B%2BPython-O(N)Time-O(1)-Space" target="_blank">Q3解法2</a></li>
+<li><a href="https://www.cnblogs.com/grandyang/p/4402392.html" target="_blank">[LeetCode] Trapping Rain Water 收集雨水</a></li>
+</ol>
+
+      </article>
+      <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ericliu03-github" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </main>
+    <nav class="end-nav side-padding">
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/posts/2019/04/monotone_stack/" class="card blog-card" rel="bookmark" >
+    
+  <article class="card-body">
+    <h2 class="card-title">Monotone Stack</h2>
+    <p class="card-text"></p>
+    <div class="card-subtext muted-text">
+      <p>Posted <time datetime="2019-04-19 419:00">Apr 19, 2019</time></p>
+      
+    </div>
+  </article>
+</a>
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/" class="card home-card" style="background-image: url( https://ericliu03.github.io/img/grey-cloud.jpg )" rel="bookmark" >
+  Home
+</a>
+    </nav>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script src="https://ericliu03.github.io/js/core.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+  </body>
+</html>

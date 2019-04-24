@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Maximum Difference Between Node and Ancestor &middot; Yang&#39;s Blog</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://ericliu03.github.io/css/main.min.css" />
+  
+  
+</head>
+  <body class="single-body">
+    <nav class="nav-bar side-padding">
+  <h1 class="nav-header"><a href="https://ericliu03.github.io/" class="nav-text">Yang&#39;s Blog</a></h1>
+  <div class="hamburger-menu">
+    <button onclick="hamburgerMenuPressed.call(this)" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="menu" class="hamburger-menu-overlay">
+      <li><a href="https://ericliu03.github.io/" class="hamburger-menu-overlay-link">Home</a></li>
+      <li><a href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="hamburger-menu-overlay-link">Pour Water</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main class="content side-text-padding">
+      <article class="post ">
+        <header class="post-header">
+        	<h1 class="post-title">Maximum Difference Between Node and Ancestor</h1>
+          <p class="post-date">Posted <time datetime="2019-04-16">Apr 16, 2019</time></p>
+        </header>
+        
+        
+
+<h2 id="question">Question</h2>
+
+<p><a href="https://leetcode.com/problems/maximum-difference-between-node-and-ancestor/" target="_blank">Leetcode 1026</a>:
+Given the root of a binary tree, find the maximum value <code>V</code> for which there exists <strong>different</strong> nodes A and B where <code>V = |A.val - B.val|</code> and A is an ancestor of B.</p>
+
+<p><em>(A node A is an ancestor of B if either: any child of A is equal to B, or any child of A is an ancestor of B.)</em></p>
+
+<pre><code class="language-python">class TreeNode:
+    def __init__(self, x):
+        self.val = x
+        self.left = None
+        self.right = None
+</code></pre>
+
+<h3 id="examples">Examples</h3>
+
+<p><img class="special-img-class" style="width:50%" src="/img/maximum_diff_between_node_and_ancestor_img1.jpg" /></p>
+
+<pre><code>Input: [8,3,10,1,6,null,14,null,null,4,7,13]
+Output: 7
+Explanation: 
+We have various ancestor-node differences, some of which are given below :
+|8 - 3| = 5
+|3 - 7| = 4
+|8 - 1| = 7
+|10 - 13| = 3
+Among all possible differences, the maximum value of 7 is obtained by |8 - 1| = 7.
+</code></pre>
+
+<h2 id="solution">Solution</h2>
+
+<h3 id="method-1">Method 1</h3>
+
+<h4 id="analysis">Analysis</h4>
+
+<p>Bottom up solution: we collect results from a node&rsquo;s left and right child and calculate result of this node</p>
+
+<ol>
+<li>each node will need three things from both left and right child
+
+<ol>
+<li>min and max num in subtree (for calculating this node&rsquo;s difference with it&rsquo;s max and min decendents)</li>
+<li>max diff in subtree</li>
+</ol></li>
+<li>combine the results given from children</li>
+<li>calculate result with current node&rsquo;s value and return</li>
+</ol>
+
+<h4 id="code">Code</h4>
+
+<pre><code class="language-python">def maxAncestorDiff(root):
+    if root is None:
+        return 0
+    else:
+        return helper(root)[2]
+
+
+def helper(node):
+    min_num = max_num = node.val
+    diff = 0
+    
+    if node.left:
+        temp = helper(node.left)
+        min_num = min(min_num, temp[0])
+        max_num = max(max_num, temp[1])
+        diff = max(diff, temp[2])
+    if node.right:
+        temp = helper(node.right)
+        min_num = min(min_num, temp[0])
+        max_num = max(max_num, temp[1])
+        diff = max(diff, temp[2])
+    
+    diff = max(diff, max(abs(node.val - min_num), abs(node.val - max_num)))
+    
+    return min_num, max_num, diff
+</code></pre>
+
+<h3 id="method-2">Method 2</h3>
+
+<h4 id="analysis-1">Analysis</h4>
+
+<p>Top down solution: the question is about nodes and their ancestors so we don&rsquo;t need to gather and combine results from both children to calculate result</p>
+
+<ol>
+<li>function is given min and max of numbers in the path from root to current node</li>
+<li>update min or max with current node&rsquo;s value and pass it to it&rsquo;s children</li>
+<li>when we reached the leaf, we calculate the result by using this min and max nums</li>
+</ol>
+
+<pre><code class="language-python">def maxAncestorDiff(root):
+    return helper(root, root.val, root.val)
+
+
+def helper(node, lo, hi):
+    if node is None:
+        return hi - lo
+
+    lo = min(lo, node.val)
+    hi = max(hi, node.val)
+
+    return max(helper(node.left, lo, hi), helper(node.right, lo, hi))
+</code></pre>
+
+      </article>
+      <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ericliu03-github" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </main>
+    <nav class="end-nav side-padding">
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/posts/2019/04/longest_increasing_subsequence/" class="card blog-card" rel="bookmark" >
+    
+  <article class="card-body">
+    <h2 class="card-title">Longest Increasing Subsequence (Chinese)</h2>
+    <p class="card-text"></p>
+    <div class="card-subtext muted-text">
+      <p>Posted <time datetime="2019-04-15 415:00">Apr 15, 2019</time></p>
+      
+    </div>
+  </article>
+</a>
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/" class="card home-card" style="background-image: url( https://ericliu03.github.io/img/grey-cloud.jpg )" rel="bookmark" >
+  Home
+</a>
+    </nav>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script src="https://ericliu03.github.io/js/core.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+  </body>
+</html>

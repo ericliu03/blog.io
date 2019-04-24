@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Create tree from tuples &middot; Yang&#39;s Blog</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://ericliu03.github.io/css/main.min.css" />
+  
+  
+</head>
+  <body class="single-body">
+    <nav class="nav-bar side-padding">
+  <h1 class="nav-header"><a href="https://ericliu03.github.io/" class="nav-text">Yang&#39;s Blog</a></h1>
+  <div class="hamburger-menu">
+    <button onclick="hamburgerMenuPressed.call(this)" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="menu" class="hamburger-menu-overlay">
+      <li><a href="https://ericliu03.github.io/" class="hamburger-menu-overlay-link">Home</a></li>
+      <li><a href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="hamburger-menu-overlay-link">Pour Water</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main class="content side-text-padding">
+      <article class="post dropcase">
+        <header class="post-header">
+        	<h1 class="post-title">Create tree from tuples</h1>
+          <p class="post-date">Posted <time datetime="2019-04-06">Apr 6, 2019</time></p>
+        </header>
+        
+        
+
+<p>This is a coding problem from Uber onsite interview found <a href="https://www.1point3acres.com/bbs/thread-502555-1-1.html" target="_blank">here</a>.</p>
+
+<h3 id="question">Question:</h3>
+
+<p>Given a list of pairs (tuples), each of them represents a connection from parent to it&rsquo;s child in a tree. In this list, nodes will have edges not only for their direct children, but also all of it&rsquo;s descendants (i.e. children&rsquo;s children, and their children etc).</p>
+
+<p>If we have the following tree as an example:</p>
+
+<pre><code>    A
+   / \
+  B   C
+ / \
+ D  E
+</code></pre>
+
+<p>Then the list given it will be</p>
+
+<pre><code> [(A,B), (A,D), (A,E), (A,C), (B,D), (B,E)]
+</code></pre>
+
+<p>You can assume the tuples given will result in a valid tree. Use this list to construct a tree.</p>
+
+<h3 id="analysis">Analysis</h3>
+
+<p>Intuitively, what we want to do is to remove the connections <em>a -&gt; b</em> while a is not the node&rsquo;s parent in the tree. The way to distinguish those connections is to find out if there&rsquo;s another way to connect a -&gt; b. If there is any, saying a -&gt; a&rsquo; -&gt; b, then we know b&rsquo;s parent is a&rsquo; instead a then we should remove a -&gt; b.</p>
+
+<p>From a different perspective, if we imagine the tuples in the list are the edges in a directed graph, then we want is a <a href="https://en.wikipedia.org/wiki/Transitive_reduction" target="_blank"><strong>transitive reduction</strong></a> of the original graph (represented by all the edges). The transitive reduction of a graph contains <em>the fewest possible edges that has the same reachability relation as the original graph, by discarding the edges u → v for which G also contains a longer path connecting the same two vertices.</em> In this way, the transitive reduction we generated will be the tree the question asked.</p>
+
+<ol>
+<li>list given is a <strong>partially ordered set</strong> of a <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph" target="_blank"><strong>DAG</strong> (Directed Acyclic Graph)</a></li>
+<li>You can also find it <a href="https://algs4.cs.princeton.edu/42digraph/" target="_blank">here</a> at item 38 in <em>Web Exercises</em> section.</li>
+<li>This question is a <strong>tree</strong> problem, but actually it&rsquo;s asking for a solution that generates the transitive reduction of a <strong>graph</strong>. It&rsquo;s important to <em>look beyond the surface</em>.</li>
+</ol>
+
+<h3 id="algorithm">Algorithm</h3>
+
+<h4 id="method-0-dfs">Method 0: DFS</h4>
+
+<p>Following the intuitive algorithm, we could loop through every node <strong>u</strong> in the graph and remove the edges <strong>u-&gt;v</strong> if there are other paths that connect from <strong>u</strong> to <strong>v</strong>.</p>
+
+<pre><code class="language-python">import collections
+
+def generate_tree0(edges):
+
+    children = collections.defaultdict(set)
+    nodes = set()
+    for u, v in edges:
+        children[u].add(v)
+        nodes.add(u)
+        nodes.add(v)
+
+    def dfs(start, target):
+        if start == target:
+            return True
+        result = False
+        for next_node in children[start]:
+            # in case we have edge that points to a node itself
+            if next_node != start:
+                result = result or dfs(next_node, target)
+        return result
+
+    for node in nodes:
+        for child in list(children[node]):
+            found = False
+            for other_child in list(children[node]):
+                if other_child != child and dfs(other_child, child):
+                    found = True
+                    break
+            if found:
+                children[node].remove(child)
+
+    return children
+</code></pre>
+
+<p>Complexity:
+ If we have N nodes, for each node we have to go to every other nodes in worst case so time complexity should be \( O(N^2) \).</p>
+
+<h4 id="method-1-topological-sort">Method 1: Topological Sort</h4>
+
+<p>We want to remove the edges that connects u-&gt;v if there are other longer paths. From another perspective, we want to keep the path from <strong>root -&gt; v</strong> with longest path. From the description we a vertex will have a edge to all of it&rsquo;s decedents, which means a vertex will have all the edges from all of it&rsquo;s ancestors (indegree[v] = len(path_from_root). If we order the edges by the distance in the longest path, then we only keep the closest one. Here we can use <a href="https://en.wikipedia.org/wiki/Topological_sorting" target="_blank">Topological sort</a> to get the order. In the process of sorting, in each round we will have node <strong>u</strong> that have no edge from others to u (i.e. 0 <a href="https://en.wikipedia.org/wiki/Directed_graph#Indegree_and_outdegree" target="_blank">indegree</a>). For every one of it&rsquo;s neighbors <strong>v</strong> it connects <em>to</em>, if there&rsquo;s any other nodes <strong>x</strong> connects <strong>to</strong> v, then it means there will be longer path(s) that connects from <strong>u</strong> to <strong>v</strong>, then the edge u-&gt;v should be discarded.</p>
+
+<p>We will use two maps to keep track of the indegrees and outdegrees of a node, and do edits in the process of sorting.</p>
+
+<pre><code class="language-python">import collections
+
+def generate_tree0(edges):
+    indegrees = collections.defaultdict(int)
+    outdegrees = collections.defaultdict(set)
+
+    for u, v in edges:
+        indegrees[v] += 1
+        if u not in indegrees:
+            indegrees[u] = 0
+        outdegrees[u].add(v)
+
+    queue = [u for u, count in indegrees.items() if indegrees[u] == 0]
+    while queue:
+        curr_node = queue.pop(0)
+        for neighbor in list(outdegrees[curr_node]):
+            if indegrees[neighbor] == 1:
+                queue.append(neighbor)
+            else:
+                indegrees[neighbor] -= 1
+                outdegrees[curr_node]remove(neighbor)
+    return outdegrees
+</code></pre>
+
+<p>Complexity:
+ If we have N nodes, for each node we have to go to every other nodes in worst case so time complexity should be \( O(N) \). .</p>
+
+<h4 id="other-thoughts-bottom-up">other thoughts: bottom up</h4>
+
+<p>Goal is still the same, just this time we check our parent&rsquo;s children. We first pick the nodes with zero-outdegree (i.e leaf nodes) and check one by one. If the a node <strong>v</strong> is the only child of it&rsquo;s parent <strong>u</strong>, then we should keep that edge <strong>u-&gt;v</strong> and remove all other edges that connected to <em>v</em>. This could be seen as a variation of topological sort.</p>
+
+<p>However, the problem is that we don&rsquo;t know which parent should we keep. For example, we have a leaf node v and it have parents u1 and u2, then which one should we keep? from the desription above, if we keep the parent that has only one child, then what about the situations that v has a sibling v2? i.e u2 -&gt; v and u2 -&gt; v2, then we should keep u2 as the parent.</p>
+
+      </article>
+      <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ericliu03-github" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </main>
+    <nav class="end-nav side-padding">
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/posts/2019/04/interviews/" class="card blog-card" rel="bookmark" >
+    
+  <article class="card-body">
+    <h2 class="card-title">Interviews</h2>
+    <p class="card-text"></p>
+    <div class="card-subtext muted-text">
+      <p>Posted <time datetime="2019-04-05 45:00">Apr 5, 2019</time></p>
+      
+    </div>
+  </article>
+</a>
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/" class="card home-card" style="background-image: url( https://ericliu03.github.io/img/grey-cloud.jpg )" rel="bookmark" >
+  Home
+</a>
+    </nav>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script src="https://ericliu03.github.io/js/core.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+  </body>
+</html>

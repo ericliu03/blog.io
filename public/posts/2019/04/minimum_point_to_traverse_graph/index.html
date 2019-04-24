@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Minimum Point to Traverse Graph &middot; Yang&#39;s Blog</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://ericliu03.github.io/css/main.min.css" />
+  
+  
+</head>
+  <body class="single-body">
+    <nav class="nav-bar side-padding">
+  <h1 class="nav-header"><a href="https://ericliu03.github.io/" class="nav-text">Yang&#39;s Blog</a></h1>
+  <div class="hamburger-menu">
+    <button onclick="hamburgerMenuPressed.call(this)" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="menu" class="hamburger-menu-overlay">
+      <li><a href="https://ericliu03.github.io/" class="hamburger-menu-overlay-link">Home</a></li>
+      <li><a href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="hamburger-menu-overlay-link">Pour Water</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main class="content side-text-padding">
+      <article class="post ">
+        <header class="post-header">
+        	<h1 class="post-title">Minimum Point to Traverse Graph</h1>
+          <p class="post-date">Posted <time datetime="2019-04-10">Apr 10, 2019</time></p>
+        </header>
+        
+        
+
+<h2 id="question">Question</h2>
+
+<p>There is a directed graph and you can traverse the nodes in this graph by following the directed edges. You can start from any node in this graph and you can pick nodes as start points as many as you needed. What is the minimum number of nodes as start points you need to traverse all the nodes?</p>
+
+<p>You will be given a number n as number of vertices in the graph, and a list contains all the edges in the graph.</p>
+
+<h3 id="examples">Examples</h3>
+
+<p>Example 1:</p>
+
+<pre><code>input: 4, [[0,1], [1,2],[2,3]]
+output: 1. we just need to pick 1 as start point and will be able to traverse the whole graph
+</code></pre>
+
+<p>Example 2:</p>
+
+<pre><code>input: 4, [[2,1], [3,1],[0,1]]
+output: 3. we have to start from 2,3 and 4 to reach all the nodes
+</code></pre>
+
+<p>Example 3:</p>
+
+<pre><code>input: 6, [[0,1], [1,2], [2,0], [2,3], [3,4], [4,5], [5,3]]
+output: 1, we could start from 3, then we could go through 0-&gt;1-&gt;2-&gt;0, and 2-&gt;3-&gt;4-&gt;5-&gt;3
+</code></pre>
+
+<p>Example 4:</p>
+
+<pre><code>input: 5, [[0, 1], [1, 2], [2, 3], [3, 0], [4, 0]]
+output: 1, we start from 4
+</code></pre>
+
+<h2 id="algorithm">Algorithm</h2>
+
+<h3 id="method-1">Method 1</h3>
+
+<h4 id="analysis">Analysis</h4>
+
+<p>Starting from the problem description, the most straightforward is to use a recursive method. We could have a loop of all the nodes in the graph. We treat each node as a start point of a DFS and see if we can traverse the whole graph. If yes, then we return 1 since we used 1 node as start point. If not, then we go 1 level deeper in the recursive function, which is another loop of the nodes, but here instead of all the nodes, we only use the nodes we can&rsquo;t reach in the previous DFS. We should be able to get one result for each node that picked as starting point. We choose the smallest number among those and plus one to return as the nodes needed to cover all the nodes.</p>
+
+<h4 id="code">Code</h4>
+
+<pre><code class="language-python">import collections
+
+def minimum_nodes(n, edges):
+    outdegrees = collections.defaultdict(set)
+    for u, v in edges:
+        outdegrees[u].add(v)
+
+    result = float('inf')
+    unvisited = set([i for i in range(n)])
+    for i in range(n):
+        result = min(result, dfs(i, outdegrees, unvisited))
+        print(result, i)
+    return result
+
+
+def dfs(start, outdegrees, unvisited):
+    unvisited_set = unvisited.copy()
+    queue = [start]
+    while queue:
+        curr_node = queue.pop(0)
+        if curr_node in unvisited_set:
+            unvisited_set.remove(curr_node)
+            for neighbor in outdegrees[curr_node]:
+                queue.append(neighbor)
+
+    if len(unvisited_set) == 0:
+        return 1
+    else:
+        result = float('inf')
+        for unvisited in unvisited_set:
+            result = min(result, dfs(unvisited, outdegrees, unvisited_set))
+        return result + 1
+</code></pre>
+
+<h3 id="method-2">Method 2</h3>
+
+<h4 id="analysis-1">Analysis</h4>
+
+<p>Thinking about the recursive function, we should notice that we did a lot duplicated works there. (Actually, if the problem is not asking for all possible ways/permutations, then there should always be duplicated works.) In this way, this could be optimized using idea of <a href="https://en.wikipedia.org/wiki/Dynamic_programming" target="_blank">Dynamic Programing</a>. There are two general ways of doing DP, 1. use a map to remember what&rsquo;s the result from a start point (in this problem the start point is the node we choose as start), and go through the path using recursive function 2. use a n-Dimension array to store the result and derive results from previous results.
+Here we could use the first way to remember the result of <strong>the nodes we could reach when starting from node u</strong>. Then each time we start the DFS, we first check if we have already examen that node as start point and if we do return the result.</p>
+
+<h4 id="code-1">Code</h4>
+
+<p>This is similar to method 1, just we remember the results we already have. But the code looks messier =|</p>
+
+<pre><code class="language-python">def minimum_nodes(n, edges):
+    memo = {}
+    outdegrees = collections.defaultdict(set)
+    for u, v in edges:
+        outdegrees[u].add(v)
+
+    result = float('inf')
+    unvisited = set([i for i in range(n)])
+    for i in range(n):
+        result = min(result, dfs(i, memo, outdegrees, unvisited))
+        print(result, i)
+    return result
+
+
+def dfs(start, memo, outdegrees, unvisited):
+    if start in memo:
+        return memo[start]
+    unvisited_set = unvisited.copy()
+    queue = [start]
+    while queue:
+        curr_node = queue.pop(0)
+        if curr_node in unvisited_set:
+            unvisited_set.remove(curr_node)
+            for neighbor in outdegrees[curr_node]:
+                queue.append(neighbor)
+
+    result = float('inf')
+    if len(unvisited_set) == 0:
+        result = 1
+    else:
+        for unvisited in unvisited_set:
+            result = min(result, dfs(unvisited, memo, outdegrees, unvisited_set))
+        result += 1
+
+    memo[start] = result
+    return result
+</code></pre>
+
+<h3 id="method-3">Method 3</h3>
+
+<h4 id="analysis-2">Analysis</h4>
+
+<p>Instead of remembering everything in a map during the recursion, we could remember something else. There are two things we need, 1. the vertices we already visited in <code>visited</code>, 2. the start points we choose in <code>start_points</code>. Still, we loop through every vertex, say <strong>u</strong> in the graph that not in <code>visited</code>, do a search (either DFS or BFS) to get all the vertices that could be reached started with <strong>u</strong>. The following is the <strong>key</strong> to this algorithm: 1. we add those reached vertices to <code>visited</code>, so we won&rsquo;t do duplicated work, 2. if in the reached vertices, there&rsquo;s any <strong>start points we chose, we remove those start points,</strong> from <code>start_points</code>. 3. add <strong>u</strong> to <code>start_points</code>. This is because we could reach the <strong>removed start points</strong> from <strong>u</strong>, and thus the vertices that the old start vertex can reach. So there&rsquo;s no need to keep the old start point anymore.</p>
+
+<h4 id="code-2">Code</h4>
+
+<pre><code class="language-python">def minimum_nodes3(n, edges):
+    outdegrees = collections.defaultdict(set)
+    for u, v in edges:
+        outdegrees[u].add(v)
+
+    visited = set()
+    starts = set()
+    for vertex in range(n):
+        if vertex in visited:
+            continue
+
+        reached = get_reached(vertex, outdegrees)
+        for s in list(starts):
+            if s in reached:
+                starts.remove(s)
+        visited.update(reached)
+        starts.add(vertex)
+
+    return len(starts)
+
+
+def get_reached(start, outdegrees):
+    visited = set()
+    queue = [start]
+    while queue:
+        curr_node = queue.pop(0)
+        if curr_node in visited:
+            continue
+
+        visited.add(curr_node)
+        for neighbor in outdegrees[curr_node]:
+            queue.append(neighbor)
+
+    return visited
+</code></pre>
+
+<h3 id="method-4">Method 4</h3>
+
+<h4 id="analysis-3">Analysis</h4>
+
+<p>In the graph theory, there&rsquo;s a concept called <a href="https://en.wikipedia.org/wiki/Strongly_connected_component" target="_blank"><strong>Strongly Connected Component(SCC)</strong></a>. If you don&rsquo;t know you should read about it. In short, all nodes in a SCC has a path to go to any other nodes in the same SCC. So what we need from it for this problem is that we want to treat the nodes in same SCC as one single node in a graph. After that the graph will be a DAG, and we just need to count how many nodes don&rsquo;t have incoming edges (i.e. 0 in-degree). Those nodes will be the start points.</p>
+
+<p>In reference 1, code for this solution is given, which used Tarjan Algorithm. I attached some great explanation in reference for this algorithm. I will write my understanding of Tarjan in the following. It uses a stack to represent the vertices that are currently visiting, and it uses <code>dfn[u]</code> to store IDs of vertices and <code>low[u]</code> to represent the vertex with lowest ID it can reach. As an example, is 6 can reach 4 (so <code>low[6] = 4</code>), and 4 can reach 1 (<code>low[4] = 1</code>). From this we know 6 can reach 1 but during the algorithm this will not be recorded directly in <code>low</code>. If <code>low[x]</code> equals to x itself, then it means it can&rsquo;t go back any further, and it will be recognized as <em>root</em> of this SCC. Thus all the vertices in the stack and pushed later then this <em>root</em> (i.e. we are visiting) will belongs to this SCC. This is because from this <em>root</em> we reached all those vertices, and somehow those vertices can comes back to this <em>root</em>.</p>
+
+<p>In my opinion this is way more complicated in an interview, so I will just skip it here.</p>
+
+<h2 id="reference">Reference</h2>
+
+<ol>
+<li><a href="https://www.1point3acres.com/bbs/forum.php?mod=viewthread&amp;tid=319799" target="_blank">[树/链表/图] 求教Airbnb的graph traversal问题 </a></li>
+<li><a href="http://blog.miskcoo.com/2016/07/tarjan-algorithm-strongly-connected-components" target="_blank">Tarjan算法寻找有向图的强连通分量</a></li>
+<li><a href="https://blog.csdn.net/hurmishine/article/details/75248876" target="_blank">全网最!详!细!Tarjan算法讲解</a></li>
+<li><a href="https://www.cnblogs.com/nullzx/p/6437926.html" target="_blank">Kosaraju算法解析: 求解图的强连通分量</a></li>
+<li><a href="https://blog.csdn.net/dm_vincent/article/details/8554244" target="_blank">求解强连通分量算法之&mdash;Kosaraju算法</a></li>
+</ol>
+
+      </article>
+      <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ericliu03-github" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </main>
+    <nav class="end-nav side-padding">
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/posts/2019/04/video_stitching/" class="card blog-card" rel="bookmark" >
+    
+  <article class="card-body">
+    <h2 class="card-title">Video Stitching</h2>
+    <p class="card-text"></p>
+    <div class="card-subtext muted-text">
+      <p>Posted <time datetime="2019-04-08 48:00">Apr 8, 2019</time></p>
+      
+    </div>
+  </article>
+</a>
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/" class="card home-card" style="background-image: url( https://ericliu03.github.io/img/grey-cloud.jpg )" rel="bookmark" >
+  Home
+</a>
+    </nav>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script src="https://ericliu03.github.io/js/core.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+  </body>
+</html>

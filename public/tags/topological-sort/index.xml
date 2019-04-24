@@ -1,0 +1,21 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>topological sort - Yang&#39;s Blog</title>
+    <link>https://ericliu03.github.io/tags/topological-sort/</link>
+    <description>Recent content in topological sort on Yang&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 06 Apr 2019 16:55:31 -0700</lastBuildDate>
+    
+        <atom:link href="https://ericliu03.github.io/tags/topological-sort/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Create tree from tuples</title>
+      <link>https://ericliu03.github.io/posts/2019/04/remove_undirect_edge/</link>
+      <pubDate>Sat, 06 Apr 2019 16:55:31 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/remove_undirect_edge/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

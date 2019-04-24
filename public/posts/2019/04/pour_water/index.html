@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Pour Water &middot; Yang&#39;s Blog</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://ericliu03.github.io/css/main.min.css" />
+  
+  
+</head>
+  <body class="single-body">
+    <nav class="nav-bar side-padding">
+  <h1 class="nav-header"><a href="https://ericliu03.github.io/" class="nav-text">Yang&#39;s Blog</a></h1>
+  <div class="hamburger-menu">
+    <button onclick="hamburgerMenuPressed.call(this)" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="menu" class="hamburger-menu-overlay">
+      <li><a href="https://ericliu03.github.io/" class="hamburger-menu-overlay-link">Home</a></li>
+      <li><a href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="hamburger-menu-overlay-link">Pour Water</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main class="content side-text-padding">
+      <article class="post dropcase">
+        <header class="post-header">
+        	<h1 class="post-title">Pour Water</h1>
+          <p class="post-date">Posted <time datetime="2019-04-07">Apr 7, 2019</time></p>
+        </header>
+        
+        
+
+<p>This is a question from Airbnb onsite interview, also could be found on <a href="https://leetcode.com/problems/pour-water/" target="_blank">leetcode</a>.</p>
+
+<h2 id="question">Question:</h2>
+
+<p>We are given an elevation map, <code>heights[i]</code> representing the height of the terrain at that index. The width at each index is 1. After V units of water fall at index K, how much water is at each index?</p>
+
+<h3 id="assumptions">Assumptions:</h3>
+
+<p>Now, you should ask some clarify questions and make some assumptions of this questions. There are a lot of good solutions and explanations on <a href="https://leetcode.com/problems/pour-water/solution/" target="_blank">leetcode</a> so I will have a different version of the assumption here.</p>
+
+<ol>
+<li>If the droplet would eventually fall by moving <strong>right</strong>, then move <strong>right</strong>.</li>
+<li>Otherwise, if the droplet would eventually fall by moving <strong>left</strong>, then move <strong>left</strong>.</li>
+<li>Water will move as many as possible.</li>
+<li>However, if the eventually fall position is the first or last position of the map, the water drop will overflow and disappear.</li>
+</ol>
+
+<p>Here, <strong>&ldquo;eventually fall&rdquo;</strong> means that the droplet will eventually be at a lower level if it moves in that direction. Also, &ldquo;level&rdquo; means the height of the terrain plus any water in that column.</p>
+
+<p>If there&rsquo;s no place for water to eventually fall without overflow, then</p>
+
+<ol>
+<li>The water drop will overflow either overflow from left or right.</li>
+<li>Otherwise, it will stay at the right most possible position.</li>
+</ol>
+
+<h3 id="examples">Examples:</h3>
+
+<pre><code>Input: heights = [2,1,1,2,1,2,2], V = 4, K = 3
+Output: [2,2,2,3,2,2,2]
+Steps:
+1. [2,1,1,2,2,2,2]
+2. [2,2,1,2,2,2,2]
+3. [2,2,2,2,2,2,2]
+4. [2,2,2,2,2,2,2] (overflow)
+
+Input: heights = [1,2,3,4], V = 1, K = 2
+Output: [1,2,3,4]
+Steps:
+1. [1,2,3,4] (overflow)
+
+Input: heights = [2,1,1,4], V = 3, K = 1
+Output: [2,2,2,4]
+Steps:
+1. [2,1,2,4]
+1. [2,2,2,4]
+1. [2,2,2,4] (overflow)
+</code></pre>
+
+<h2 id="analysis">Analysis</h2>
+
+<p>With these assumptions, this question is a bit complicated than the one in leetcode. We need to explicitly deal with some conditions. For example, instead of overflow, we have high walls on both sides, we don&rsquo;t need to care about whether we will overflow or not.</p>
+
+<h3 id="conditions">Conditions</h3>
+
+<ol>
+<li>On right side find the 1. right most position, 2. lowest level, 3.water can flow there (water can&rsquo;t flow up)</li>
+<li>Do the same on the left side.</li>
+<li>Check if we overflow: checking the level of the position we find on both left and right sides. One in overflow position and the other is either in overflow position or the level of that position is not lower than dropping position(V), then we will overflow.</li>
+<li>Otherwise, find the correct position, it should be the one on right side, unless the right position is not a <strong>&lsquo;eventually fall&rsquo;</strong> position while the one on the left is.</li>
+</ol>
+
+<h2 id="coding">Coding</h2>
+
+<pre><code class="language-python">def pour_water(elevation, drop_count, drop_pos):
+    n = len(elevation)
+    for _ in range(drop_count):
+        right_pos = drop_pos
+        left_pos = drop_pos
+
+        while right_pos + 1 &lt; n and elevation[right_pos + 1] &lt;= elevation[right_pos]:
+            right_pos += 1
+        while left_pos - 1 &gt;= 0 and elevation[left_pos - 1] &lt;= elevation[left_pos]:
+            left_pos -= 1
+
+        next_pos = right_pos
+        if (right_pos == n - 1 and left_pos == 0) \
+                or (right_pos == n - 1 and elevation[left_pos] == elevation[drop_pos]) \
+                or (left_pos == 0 and elevation[right_pos] == elevation[drop_pos]):
+            continue
+        elif elevation[right_pos] == elevation[drop_pos] and elevation[left_pos] &lt; elevation[drop_pos]:
+            next_pos = left_pos
+
+        elevation[next_pos] += 1
+    return elevation
+</code></pre>
+
+<h3 id="tips">Tips</h3>
+
+<p>When scanning using while loop, we can check the value on next index before moving forward. In this way, our result index will be the last one that satisfy the while condition. Be attention that the first index is not checked.</p>
+
+      </article>
+      <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ericliu03-github" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </main>
+    <nav class="end-nav side-padding">
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/posts/2019/04/remove_undirect_edge/" class="card blog-card" rel="bookmark" >
+    
+  <article class="card-body">
+    <h2 class="card-title">Create tree from tuples</h2>
+    <p class="card-text"></p>
+    <div class="card-subtext muted-text">
+      <p>Posted <time datetime="2019-04-06 46:00">Apr 6, 2019</time></p>
+      
+    </div>
+  </article>
+</a>
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/" class="card home-card" style="background-image: url( https://ericliu03.github.io/img/grey-cloud.jpg )" rel="bookmark" >
+  Home
+</a>
+    </nav>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script src="https://ericliu03.github.io/js/core.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+  </body>
+</html>

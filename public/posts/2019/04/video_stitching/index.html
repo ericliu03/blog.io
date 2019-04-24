@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Video Stitching &middot; Yang&#39;s Blog</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://ericliu03.github.io/css/main.min.css" />
+  
+  
+</head>
+  <body class="single-body">
+    <nav class="nav-bar side-padding">
+  <h1 class="nav-header"><a href="https://ericliu03.github.io/" class="nav-text">Yang&#39;s Blog</a></h1>
+  <div class="hamburger-menu">
+    <button onclick="hamburgerMenuPressed.call(this)" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="menu" class="hamburger-menu-overlay">
+      <li><a href="https://ericliu03.github.io/" class="hamburger-menu-overlay-link">Home</a></li>
+      <li><a href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="hamburger-menu-overlay-link">Pour Water</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main class="content side-text-padding">
+      <article class="post ">
+        <header class="post-header">
+        	<h1 class="post-title">Video Stitching</h1>
+          <p class="post-date">Posted <time datetime="2019-04-08">Apr 8, 2019</time></p>
+        </header>
+        
+        
+
+<p>This is a question from <a href="https://leetcode.com/problems/video-stitching/" target="_blank">leetcode.com</a>.</p>
+
+<h2 id="problem">Problem</h2>
+
+<h3 id="question">Question</h3>
+
+<p>You are given a series of video clips from a sporting event that lasted T seconds.  These video clips can be overlapping with each other and have varied lengths.</p>
+
+<p>Each video clip <code>clips[i]</code> is an interval: it starts at time <code>clips[i][0]</code> and ends at time <code>clips[i][1]</code>.  We can cut these clips into segments freely: for example, a clip <code>[0, 7]</code> can be cut into segments <code>[0, 1] + [1, 3] + [3, 7]</code>.</p>
+
+<p>Return the minimum number of clips needed so that we can cut the clips into segments that cover the entire sporting event (<code>[0, T]</code>).  If the task is impossible, return <code>-1</code>.</p>
+
+<h3 id="examples">Examples</h3>
+
+<p>Example 1:</p>
+
+<pre><code>Input: clips = [[0,2],[4,6],[8,10],[1,9],[1,5],[5,9]], T = 10
+Output: 3
+Explanation: 
+We take the clips [0,2], [8,10], [1,9]; a total of 3 clips.
+Then, we can reconstruct the sporting event as follows:
+We cut [1,9] into segments [1,2] + [2,8] + [8,9].
+Now we have segments [0,2] + [2,8] + [8,10] which cover the sporting event [0, 10].
+</code></pre>
+
+<p>Example 2:</p>
+
+<pre><code>Input: clips = [[0,1],[1,2]], T = 5
+Output: -1
+Explanation: 
+We can't cover [0,5] with only [0,1] and [0,2].
+</code></pre>
+
+<p>Example 3:</p>
+
+<pre><code>Input: clips = [[0,1],[6,8],[0,2],[5,6],[0,4],[0,3],[6,7],[1,3],[4,7],[1,4],[2,5],[2,6],[3,4],[4,5],[5,7],[6,9]], T = 9
+Output: 3
+Explanation: 
+We can take clips [0,4], [4,7], and [6,9].
+</code></pre>
+
+<p>Example 4:</p>
+
+<pre><code>Input: clips = [[0,4],[2,8]], T = 5
+Output: 2
+Explanation: 
+Notice you can have extra video after the event ends.
+</code></pre>
+
+<p>Note:</p>
+
+<pre><code>1 &lt;= clips.length &lt;= 100
+0 &lt;= clips[i][0], clips[i][1] &lt;= 100
+0 &lt;= T &lt;= 100
+</code></pre>
+
+<h2 id="analysis">Analysis</h2>
+
+<p>If we take the core of the problem out, what we need to find is minimum number of ranges that covers [0, T].</p>
+
+<p>We can start with 0, since 0 is the starting point (left-most position) and we have to cover it. By checking all the sections that starts &lt;= 0, we will know the how long we can reach to the right. For example, in example 3, we have <code>[0,1], [0,2], [0,3], [0,4]</code>. Then in next step, we could reach any sections that start &lt;= 4. So we will loop through all the sections again and find how long we can reach to the right. If we have <code>[2,9]</code> and <code>[4,8]</code>, we will know we can reach 9.</p>
+
+<p>So in each scan, we will know how far we can reach and once we reach further than T or we can&rsquo;t move, we finished scan and return the result.</p>
+
+<h2 id="algorithm">Algorithm</h2>
+
+<h3 id="method-1">Method 1:</h3>
+
+<pre><code class="language-python">def video_stitching(clips, T):
+    curr_reached = 0
+    count = 0
+
+    while curr_reached &lt; T:
+        next_reached = curr_reached
+        for start, end in clips:
+            if start &lt;= curr_reached and end &gt; next_reached:
+                next_reached = end
+        count += 1
+        if next_reached == curr_reached:
+            count = -1
+            break
+        else:
+            curr_reached = next_reached
+
+    return count
+</code></pre>
+
+<p>Time complexity: in the worst case, we move one section by one section and need to loop through every section for each section, so \( O(N^2) \)</p>
+
+<h3 id="method-2">Method 2:</h3>
+
+<p>First we sort this clips based on start time (end time doesn&rsquo;t matter because we will scan all of them). Then during the loop, we will keep record of how far we can go in next round and stop at the section whose start is greater than our current reached point (so that we can concatenate). So in next round, we start at where we stopped and do the same thing.</p>
+
+<pre><code class="language-python">def video_stitching2(clips, T):
+    clips.sort()
+    curr_reached = 0
+    count = 0
+    pos = 0
+
+    while pos &lt; len(clips) and curr_reached &lt; T:
+        next_reached = curr_reached
+        while pos &lt; len(clips) and clips[pos][0] &lt;= curr_reached:
+            next_reached = max(next_reached, clips[pos][1])
+            pos += 1
+        count += 1
+        if next_reached == curr_reached:
+            break
+        else:
+            curr_reached = next_reached
+
+    return count if curr_reached &gt;= T else -1
+</code></pre>
+
+<p>Time complexity: the scan is \( O(N) \) but sorting is \( O(NlogN) \). So overall the time complexity is \( O(NlogN) \)</p>
+
+      </article>
+      <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ericliu03-github" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </main>
+    <nav class="end-nav side-padding">
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="card blog-card" rel="bookmark" >
+    
+  <article class="card-body">
+    <h2 class="card-title">Pour Water</h2>
+    <p class="card-text"></p>
+    <div class="card-subtext muted-text">
+      <p>Posted <time datetime="2019-04-07 47:00">Apr 7, 2019</time></p>
+      
+    </div>
+  </article>
+</a>
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/" class="card home-card" style="background-image: url( https://ericliu03.github.io/img/grey-cloud.jpg )" rel="bookmark" >
+  Home
+</a>
+    </nav>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script src="https://ericliu03.github.io/js/core.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+  </body>
+</html>

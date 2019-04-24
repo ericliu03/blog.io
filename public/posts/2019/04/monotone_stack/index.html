@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Monotone Stack &middot; Yang&#39;s Blog</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://ericliu03.github.io/css/main.min.css" />
+  
+  
+</head>
+  <body class="single-body">
+    <nav class="nav-bar side-padding">
+  <h1 class="nav-header"><a href="https://ericliu03.github.io/" class="nav-text">Yang&#39;s Blog</a></h1>
+  <div class="hamburger-menu">
+    <button onclick="hamburgerMenuPressed.call(this)" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="menu" class="hamburger-menu-overlay">
+      <li><a href="https://ericliu03.github.io/" class="hamburger-menu-overlay-link">Home</a></li>
+      <li><a href="https://ericliu03.github.io/posts/2019/04/pour_water/" class="hamburger-menu-overlay-link">Pour Water</a></li>
+      
+    </ul>
+  </div>
+</nav>
+    <main class="content side-text-padding">
+      <article class="post ">
+        <header class="post-header">
+        	<h1 class="post-title">Monotone Stack</h1>
+          <p class="post-date">Posted <time datetime="2019-04-19">Apr 19, 2019</time></p>
+        </header>
+        
+        
+
+<p>今天我们的题目会围绕一种数据结构（单调栈）和相应的解题方法来讲解。总共3道由易到难的题目。</p>
+
+<h2 id="question">Question</h2>
+
+<p><a href="https://leetcode.com/problems/daily-temperatures/" target="_blank">Leetcode 739: Daily Temperatures</a></p>
+
+<p>Given a list of daily temperatures T, return a list such that, for each day in the input, tells you how many days you would have to wait until a warmer temperature. If there is no future day for which this is possible, put 0 instead.</p>
+
+<h3 id="example">Example</h3>
+
+<p>given the list of temperatures <code>T = [73, 74, 75, 71, 69, 72, 76, 73]</code>, your output should be <code>[1, 1, 4, 2, 1, 1, 0, 0]</code>.</p>
+
+<h3 id="note">Note</h3>
+
+<p>The length of temperatures will be in the range <code>[1, 30000]</code>. Each temperature will be an integer in the range <code>[30, 100]</code>.</p>
+
+<h2 id="solution">Solution</h2>
+
+<h3 id="method-1">Method 1</h3>
+
+<h4 id="analysis">Analysis</h4>
+
+<p>这题去掉context就是找每个数的下一个比他大的数的位置。\( O(N^2) \) 的方法就简单说一下：对于每个数，都扫一遍他后面的所有数，找到第一个比他大的。</p>
+
+<p><img class="special-img-class" style="width:50%" src="/img/monotone_stack_img1.jpeg" /></p>
+
+<p>那更快一点的方法呢？我们现在考虑如上图两种情况， 1中在a之前的点是单调递增的，所以对于每个数来说，下一个比他大的数就是他右边的数。假设b比a大，那么对于点a来说只有到了b点才能知道下一个大的数在哪。所以我们可以先把a存起来，直到遇到了比a大的b，再写到结果里说比a大的是b。对于图2，在b之前是单调递减的，所以直到b之前都不会遇到符合条件的数，所以我们都得存下来，等遇到b了，我们就可以把存下来的数中比b小的放到结果中，比b大的依然要等。</p>
+
+<p>那么用什么数据结构来暂存这些数呢？关键点就是这些暂存的数字需要保持进入时的顺序，先进先出。所以我们用一个stack来存下暂时没有找到更大的数的数，每当来一个新数的时候就和stack中的数字比较一下，如果新数比stack的顶要大，那就说明栈顶的数的对应的数找到了，可以写入结果了。我们就把他pop出来，继续看栈顶，直到栈为空或者栈顶的数比新数大。可以看到这个stack里面的数单调递减的，原因是如果有increase的话，比如<code>a&gt;b&lt;c</code>，那么b的答案其实就是c，一开始就不会放到stack里。</p>
+
+<p>这就是monotone stack，<a href="http://www.cnblogs.com/grandyang/p/8887985.html" target="_blank">这篇文章</a>可以作为参考。</p>
+
+<p>需要注意的一个细节是stack中存的不是数字（温度），而是数字的位置，这样我们在能用位置拿到数字的同时还能知道结果应该存在result数组的哪个位置。</p>
+
+<h4 id="code">Code</h4>
+
+<pre><code class="language-python">def dailyTemperatures(temps):
+    stack = []
+    result = [0] * len(temps)
+
+    for i, temp in enumerate(temps):
+        while stack and temp &gt; temps[stack[-1]]:
+            result[stack[-1]] = i - stack[-1]
+            stack.pop()
+        stack.append(i)
+
+    return result
+</code></pre>
+
+<h2 id="question-2">Question 2</h2>
+
+<p><a href="https://leetcode.com/problems/trapping-rain-water/" target="_blank">Leetcode 42: Trapping Rain Water</a></p>
+
+<p>Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it is able to trap after raining.</p>
+
+<h3 id="example-1">Example</h3>
+
+<p><img class="special-img-class" style="width:50%" src="/img/monotone_stack_img2.png" />
+The above elevation map is represented by array <code>T=[0,1,0,2,1,0,1,3,2,1,2,1]</code>. In this case, 6 units of rain water (blue section) are being trapped.</p>
+
+<pre><code>Input: [0,1,0,2,1,0,1,3,2,1,2,1]
+Output: 6
+</code></pre>
+
+<h2 id="solution-1">Solution</h2>
+
+<h3 id="method-1-1">Method 1</h3>
+
+<h4 id="analysis-1">Analysis</h4>
+
+<p>本题有很多解法，这里还是讲monotone stack。与上题相同，stack应当还是monotonically decreasing的，因为只有遇到比栈顶高的bar，才有可能存住水。不同的地方在于当我们遇到比栈顶大的数的时候的所做的事情。</p>
+
+<p>本题中，遇到比栈顶大的数之后我们就可以存水了。但是存水量的计算有点不intuitive，我们需要左右两遍的bar，和<strong>中间的坑</strong>。我们稍微改变一下题目的例子，把<code>T[6]</code>变成0。假设现在我们走到了<code>i = 3</code>，前面的数都比2小所以都pop出去了，stack是<code>[2]</code>。继续往后走直到<code>index = 6</code>stack变成<code>[2,1,0,0]</code>，下一步<code>T[7]=3</code>，比stack的顶要大，可以作为右边的bar。 栈顶元素（0）就要变做坑，然后我们就继续pop，直到遇到了比坑高的（1）作为左边的bar。水量就是坑的长度乘以坑的深度（<code>min（左bar，右bar）- 坑底部的高度）</code>。因为<code>T[3]=2</code>还是比<code>T[7]</code>小，我们再进行一次同样的水量计算。注意刚才左边的bar是没有取出来的，目的就是在这轮可以用作坑。或者从另一个角度理解，我们刚刚才左bar到右bar之间取出来水之后填上了土，所以坑的高度就变成了左bar。</p>
+
+<p>不容易理解的地方就是，两次计算完毕你会发现水量是根据左bar或者右bar的高度横向计算的，在这个例子里从<code>T[4] -&gt; T[7]</code> 高度<code>1-0</code>计算一次，然后<code>T[3] -&gt; T[7]</code>高度<code>2-1</code>计算一次。双指针的解法中水量是竖向计算的。</p>
+
+<h4 id="code-1">Code</h4>
+
+<pre><code class="language-python">def trap(heights):
+    stack = []
+    result = 0
+
+    for i, h in enumerate(heights):
+        while stack and h &gt; heights[stack[-1]]:
+            pit_h = heights[stack.pop()]
+            # we have to have a left bar to trap water
+            if stack:
+                result += (min(h, heights[stack[-1]]) - pit_h) * (i - stack[-1] - 1)
+        stack.append(i)
+
+    return result
+</code></pre>
+
+<h2 id="question-3">Question 3</h2>
+
+<p><a href="https://leetcode.com/problems/largest-rectangle-in-histogram/" target="_blank">Leetcode 84: Largest Rectangle in Histogram</a></p>
+
+<p>Given n non-negative integers representing the histogram&rsquo;s bar height where the width of each bar is 1, find the area of largest rectangle in the histogram.</p>
+
+<h3 id="example-2">Example</h3>
+
+<p><img class="special-img-class" style="width:30%" src="/img/monotone_stack_img3.png" />
+<em>Above is a histogram where width of each bar is 1, given height = [2,1,5,6,2,3].  The largest rectangle is shown in the shaded area, which has area = 10 unit.</em></p>
+
+<h2 id="solution-2">Solution</h2>
+
+<h3 id="method-1-2">Method 1</h3>
+
+<h4 id="analysis-2">Analysis</h4>
+
+<p>我们依然使用monotone stack的方式来解决这道题。与存水同样的思路，只有新数字小于栈顶时我们进行计算。计算的方式类似但是略有不同。以上图举例，当我们走到数字<code>2</code>时，stack中是<code>[1,5,6]</code>。<code>2&lt;6</code>所以开始计算，计算的方式是<code>木板的块数 * 栈顶木板的高度</code>。计算完成后比较结果与目前的已知最大面积，然后pop 6出来，发现<code>2&lt;5</code>所以再次计算，直到栈顶数字小于当前数字。之后我们把2push进入之后继续往后走直到结束。存的最大面积就是结果。</p>
+
+<p>这里模板的块数的计算有点tricky。如上图所示，当我们走到最后的时候，stack中是<code>[1,2,3]</code>。以高度3为顶的计算就是<code>(6-5) * 3</code>，但是当pop出3之后，以2为顶计算时，左边界index不是4，而是2。因为我们知道2左边被pop出去的板子都比2高，所以我们计算面积时应该把那些板子都算进去。那么怎么找pop出了多少呢？如果stack中还有数字的话，那么2左边的那个就是第一个比2小的，如果没有就说明2就是最小的我们应该把0作为左边界。</p>
+
+<p>有几点可能对理解有所帮助：</p>
+
+<ol>
+<li>木板面积可以这样计算的原因是我们进行了类似于<em>填坑</em> 的削顶，也就是说当把6拿出来之后，我们看到下一个数字是5，那么我们就知道 1.目前最矮的是5，2. pop出去的都比5高，所以形成的正方形肯定最高就是5，横向长度就是目前为止到这个高度为5的板子的距离。</li>
+<li>计算板子面积不需要像存水一样有左右bar和坑，我们需要左右边界。
+
+<ol>
+<li>在给定的输入最后填上一个0作为空的右边界，以保证最后一块板子也参与了计算。</li>
+<li>计算面积时如果stack为空那么左边界就是0。</li>
+</ol></li>
+<li>每块板子的所有组成的方块其实都被显式或者隐式的计算过。比如上面计算6 * 1 的时候就是6作为方块的唯一一块板子，下一步5 * 2的时候6其实也包含在了板子中。</li>
+</ol>
+
+<p>推荐看一下reference 4，博主配上了很多图片便于理解。但是博客给的图片关于计算面积是有错误的，他的左边界是选的当前栈顶的位置。</p>
+
+<h4 id="code-2">Code</h4>
+
+<pre><code class="language-python">def largestRectangleArea(heights):
+    heights.append(0)
+    stack = []
+    result = 0
+
+    for i, h in enumerate(heights):
+        while stack and heights[stack[-1]] &gt; h:
+            bar_i = stack.pop()
+            l_i = stack[-1] + 1 if stack else 0
+            result = max(result, (i - l_i) * heights[bar_i])
+        stack.append(i)
+
+    return result
+</code></pre>
+
+<h2 id="reference">Reference</h2>
+
+<ol>
+<li>其他可以使用Monotone stack解的题目
+
+<ol>
+<li><a href="https://leetcode.com/problems/next-greater-element-i/" target="_blank">Leetcode 496</a></li>
+<li><a href="https://leetcode.com/problems/next-greater-node-in-linked-list/" target="_blank">Leetcode 1019</a></li>
+</ol></li>
+<li><a href="http://www.cnblogs.com/grandyang/p/8887985.html" target="_blank">LeetCode Monotone Stack Summary 单调栈小结</a></li>
+<li><a href="http://www.cnblogs.com/grandyang/p/4402392.html" target="_blank">解法：Trapping Rain Water 收集雨水</a></li>
+<li><a href="http://www.cnblogs.com/lichen782/p/leetcode_Largest_Rectangle_in_Histogram.html" target="_blank">LeetCode 笔记系列 17 Largest Rectangle in Histogram</a></li>
+<li><a href="http://fisherlei.blogspot.com/2012/12/leetcode-largest-rectangle-in-histogram.html" target="_blank">水中的鱼：Largest Rectangle in Histogram 解题报告</a></li>
+</ol>
+
+      </article>
+      <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ericliu03-github" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </main>
+    <nav class="end-nav side-padding">
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/posts/2019/04/maximum_diff_between_node_and_ancestor/" class="card blog-card" rel="bookmark" >
+    
+  <article class="card-body">
+    <h2 class="card-title">Maximum Difference Between Node and Ancestor</h2>
+    <p class="card-text"></p>
+    <div class="card-subtext muted-text">
+      <p>Posted <time datetime="2019-04-16 416:00">Apr 16, 2019</time></p>
+      
+    </div>
+  </article>
+</a>
+      
+      <a ontouchstart="cardPressed.call(this)" ontouchend="cardReleased.call(this)" ontouchmove="cardReleased.call(this)" 
+  href="https://ericliu03.github.io/" class="card home-card" style="background-image: url( https://ericliu03.github.io/img/grey-cloud.jpg )" rel="bookmark" >
+  Home
+</a>
+    </nav>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+<script src="https://ericliu03.github.io/js/core.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+  </body>
+</html>

@@ -1,0 +1,1401 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Yang&#39;s Blog</title>
+    <link>https://ericliu03.github.io/</link>
+    <description>Recent content on Yang&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 23 Apr 2019 21:23:24 -0700</lastBuildDate>
+    
+        <atom:link href="https://ericliu03.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Two Pass for Min/Max/Sum/Product</title>
+      <link>https://ericliu03.github.io/posts/2019/04/two_pass/</link>
+      <pubDate>Tue, 23 Apr 2019 21:23:24 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/two_pass/</guid>
+      <description>
+
+&lt;p&gt;今天我们讲解一种算法思想。这种方法一般使用在需要把整个数组分成2份的情况，求这两份组成的是最大、最小、和最大之类的。下面我们来看三道由易到难的题目。&lt;/p&gt;
+
+&lt;h2 id=&#34;question&#34;&gt;Question&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://leetcode.com/problems/product-of-array-except-self&#34; target=&#34;_blank&#34;&gt;Leetcode 238: Product of Array Except Self&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Given an array &lt;code&gt;nums&lt;/code&gt; of n integers where n &amp;gt; 1,  return an array &lt;code&gt;output&lt;/code&gt; such that &lt;code&gt;output[i]&lt;/code&gt; is equal to the product of all the elements of &lt;code&gt;nums&lt;/code&gt; except &lt;code&gt;nums[i]&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;Input:  [1,2,3,4]
+Output: [24,12,8,6]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;follow-up&#34;&gt;Follow up:&lt;/h4&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Please solve it without division and in O(n).&lt;/li&gt;
+&lt;li&gt;Could you solve it with constant space complexity? (The output array does not count as extra space for the purpose of space complexity analysis.)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;solution&#34;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&#34;method-1&#34;&gt;Method 1&lt;/h3&gt;
+
+&lt;p&gt;求全部数字的乘积&lt;code&gt;mul&lt;/code&gt;，然后生成output的时候把&lt;code&gt;mul&lt;/code&gt;除以当前数字就是结果。time complexity是O(n)，但是用到了除法。&lt;/p&gt;
+
+&lt;h3 id=&#34;method-2&#34;&gt;Method 2&lt;/h3&gt;
+
+&lt;p&gt;为了不用除法我们可以对每个数字都遍历一边他左边和右边的数字求乘积，但是是O(n2)。&lt;/p&gt;
+
+&lt;h3 id=&#34;method-3&#34;&gt;Method 3&lt;/h3&gt;
+
+&lt;p&gt;我们扫两遍数组，计算出两个数组&lt;code&gt;left[i]&lt;/code&gt; 和 &lt;code&gt;right[i]&lt;/code&gt;，分别是从0到i和从i到n-1的累积乘积。在计算结果时对于每个数计算&lt;code&gt;left[i-1]*right[i+1]&lt;/code&gt;即可。没有使用除法，也是O(n)。但是用了O(n)的space&lt;/p&gt;
+
+&lt;h3 id=&#34;method-4&#34;&gt;Method 4&lt;/h3&gt;
+
+&lt;p&gt;既然output不算做extra space，那么我们可以利用他当做left，然后在计算right数组的同时计算结果。这样就满足了所有follow up 条件。&lt;/p&gt;
+
+&lt;h4 id=&#34;code&#34;&gt;Code&lt;/h4&gt;
+
+&lt;p&gt;我们这里只写method 4 的code了。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def productExceptSelf(nums):
+    left = []
+    
+    curr = 1
+    for i in range(len(nums)):
+        curr *= nums[i]
+        left.append(curr)
+    
+    curr = 1
+    for i in range(len(nums)-1,0,-1):
+        left[i] = left[i-1] * curr
+        curr *= nums[i]
+    left[0] = curr
+    
+    return left
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;question-2&#34;&gt;Question 2&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://leetcode.com/problems/trapping-rain-water/&#34; target=&#34;_blank&#34;&gt;Leetcode 42: Trapping Rain Water&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it is able to trap after raining.&lt;/p&gt;
+
+&lt;h3 id=&#34;example&#34;&gt;Example&lt;/h3&gt;
+
+&lt;p&gt;&lt;img class=&#34;special-img-class&#34; style=&#34;width:50%&#34; src=&#34;https://ericliu03.github.io/img/monotone_stack_img2.png&#34; /&gt;
+The above elevation map is represented by array &lt;code&gt;T=[0,1,0,2,1,0,1,3,2,1,2,1]&lt;/code&gt;. In this case, 6 units of rain water (blue section) are being trapped.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: [0,1,0,2,1,0,1,3,2,1,2,1]
+Output: 6
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;solution-1&#34;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&#34;method-1-1&#34;&gt;Method 1&lt;/h3&gt;
+
+&lt;p&gt;这题我们之前在monotone stack中讲解了一种解法，我们这次来看two pass如何使用在这道题上。&lt;/p&gt;
+
+&lt;p&gt;从题目出发，我们需要找出每个点上可以存的水的数量（高度），能存多高取决于这个点左右两边最高的高度，也就是边界高度。但是相邻的左右两个点未必是其边界，我们需要找左右两边的最高的高度。所以我们可以扫描两边数组，找出对于位置&lt;code&gt;i&lt;/code&gt;左边的和右边的最高的elevation的高度。&lt;/p&gt;
+
+&lt;h4 id=&#34;code-1&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def trap(heights):
+    n = len(heights)
+    left = right = [0] * n
+    l_max = r_max = 0
+    result = 0
+    
+    for i in range(n):
+        l_max = max(l_max, heights[i])
+        r_max = max(r_max, heights[n-1 - i])
+        left[i] = l_max
+        right[n-1 - i] = r_max
+    
+    for i in range(n):
+        water = min(left[i], right[i]) - heights[i]
+        result += water if water &amp;gt; 0 else 0
+    
+    return result
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;question-3&#34;&gt;Question 3&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://leetcode.com/problems/maximum-sum-of-two-non-overlapping-subarrays/&#34; target=&#34;_blank&#34;&gt;Leetcode 1031: Maximum Sum of Two Non-Overlapping Subarrays&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Given an array A of non-negative integers, return the maximum sum of elements in two non-overlapping (contiguous) subarrays, which have lengths L and M.  (For clarification, the L-length subarray could occur before or after the M-length subarray.)&lt;/p&gt;
+
+&lt;p&gt;Formally, return the largest V for which &lt;code&gt;V = (A[i] + A[i+1] + ... + A[i+L-1]) + (A[j] + A[j+1] + ... + A[j+M-1])&lt;/code&gt;and either:&lt;code&gt;0 &amp;lt;= i &amp;lt; i + L - 1 &amp;lt; j &amp;lt; j + M - 1 &amp;lt; A.length&lt;/code&gt;, or &lt;code&gt;0 &amp;lt;= j &amp;lt; j + M - 1 &amp;lt; i &amp;lt; i + L - 1 &amp;lt; A.length&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;examples-1&#34;&gt;Examples:&lt;/h3&gt;
+
+&lt;p&gt;Example 1:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: A = [0,6,5,2,2,5,1,9,4], L = 1, M = 2
+Output: 20
+Explanation: One choice of subarrays is [9] with length 1, and [6,5] with length 2.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 2:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: A = [3,8,1,3,2,1,8,9,0], L = 3, M = 2
+Output: 29
+Explanation: One choice of subarrays is [3,8,1] with length 3, and [8,9] with length 2.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 3:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: A = [2,1,5,6,0,9,5,0,3,8], L = 4, M = 3
+Output: 31
+Explanation: One choice of subarrays is [5,6,0,9] with length 4, and [3,8] with length 3.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;solution-2&#34;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&#34;method-1-2&#34;&gt;Method 1&lt;/h3&gt;
+
+&lt;p&gt;题目形容的有点难懂，简单来说就是在给的array中找出两个不重叠的长度为L和M的subsequence，他们的和最大。L和M的两个subsequence元素的加入让题目复杂了一些，但是仔细一想两个不重叠的subsequence，其实也可以看做是在&lt;code&gt;index = i&lt;/code&gt;处的左右两边的两个数组。那么这样理解之后解法其实就与上面的题目一样了，只是元素多了一点：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;我们从左往右，找出在每个点&lt;code&gt;i&lt;/code&gt;处，左边为L长度和左边为M长度的最大值，放在两个数组里。&lt;/li&gt;
+&lt;li&gt;再从右往左，找出左边为M和左边为L长度的放到另外两个数组中。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;代码可以参考一下&lt;a href=&#34;https://leetcode.com/problems/maximum-sum-of-two-non-overlapping-subarrays/discuss/278727/C%2B%2B-O(N)-buysell-stock-2-times&#34; target=&#34;_blank&#34;&gt;这里&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;method-2-1&#34;&gt;Method 2&lt;/h3&gt;
+
+&lt;p&gt;虽然method 1我们存了4个数组出来，但其实和Q1M3的解法是相同的。下面我们做一些类似于Q1M4一样的优化。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;和Q1M4一样，在第二遍从右往左扫描时直接计算结果。（节省一半储存和计算结果的一遍扫描）&lt;/li&gt;
+&lt;li&gt;不算最大值，算cumulative sum。subsequence的sum直接使用减法计算&lt;code&gt;sum_left_to_right = A[left] - A[right]&lt;/code&gt;。最大值在扫描时计算。（再节省一半储存）&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;因为题目的特性，我们可以在第二遍依然从左往右走，不断update两个变量l_left, m_left,分别为左边长度为l和m的sequence的sum的最大值。扫描的同时计算出每一个A[i-L]和A[i-M]的值，作为右边对应的长度为M和L的值。求和即为可能结果，因为左边是max，右边又扫描到了每一个长度为L和M的sum
+，所以最大的和一定就是结果。&lt;/p&gt;
+
+&lt;h4 id=&#34;code-2&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def maxSumTwoNoOverlap(A, L, M):
+    for i in range(1, len(A)):
+        A[i] += A[i - 1]
+
+    l_left = A[L - 1]
+    m_left = A[M - 1]
+    result = A[L + M - 1]
+
+    for i in range(L + M, len(A)):
+        l_left = max(l_left, A[i - M] - A[i - M - L])
+        m_left = max(m_left, A[i - L] - A[i - L - M])
+
+        l_right = A[i] - A[i - L]
+        m_right = A[i] - A[i - M]
+
+        result = max(result, l_left + m_right, m_left + l_right)
+
+    return result
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;总的来说这个解法就是对给定的数据做一些预处理，然后在处理之后的数据上求需要的结果。&lt;/p&gt;
+
+&lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;more questions:
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/&#34; target=&#34;_blank&#34;&gt;Leetcode 123: Best Time to Buy and Sell Stock III&lt;/a&gt;, &lt;a href=&#34;https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/discuss/39665/Java-solution-with-just-two-traverses.&#34; target=&#34;_blank&#34;&gt;solution&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://leetcode.com/problems/maximum-sum-of-two-non-overlapping-subarrays/discuss/278727/C%2B%2B-O(N)-buysell-stock-2-times&#34; target=&#34;_blank&#34;&gt;Q3解法1&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://leetcode.com/problems/maximum-sum-of-two-non-overlapping-subarrays/discuss/278251/JavaC%2B%2BPython-O(N)Time-O(1)-Space&#34; target=&#34;_blank&#34;&gt;Q3解法2&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.cnblogs.com/grandyang/p/4402392.html&#34; target=&#34;_blank&#34;&gt;[LeetCode] Trapping Rain Water 收集雨水&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Monotone Stack</title>
+      <link>https://ericliu03.github.io/posts/2019/04/monotone_stack/</link>
+      <pubDate>Fri, 19 Apr 2019 12:45:10 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/monotone_stack/</guid>
+      <description>
+
+&lt;p&gt;今天我们的题目会围绕一种数据结构（单调栈）和相应的解题方法来讲解。总共3道由易到难的题目。&lt;/p&gt;
+
+&lt;h2 id=&#34;question&#34;&gt;Question&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://leetcode.com/problems/daily-temperatures/&#34; target=&#34;_blank&#34;&gt;Leetcode 739: Daily Temperatures&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Given a list of daily temperatures T, return a list such that, for each day in the input, tells you how many days you would have to wait until a warmer temperature. If there is no future day for which this is possible, put 0 instead.&lt;/p&gt;
+
+&lt;h3 id=&#34;example&#34;&gt;Example&lt;/h3&gt;
+
+&lt;p&gt;given the list of temperatures &lt;code&gt;T = [73, 74, 75, 71, 69, 72, 76, 73]&lt;/code&gt;, your output should be &lt;code&gt;[1, 1, 4, 2, 1, 1, 0, 0]&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;note&#34;&gt;Note&lt;/h3&gt;
+
+&lt;p&gt;The length of temperatures will be in the range &lt;code&gt;[1, 30000]&lt;/code&gt;. Each temperature will be an integer in the range &lt;code&gt;[30, 100]&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;solution&#34;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&#34;method-1&#34;&gt;Method 1&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;这题去掉context就是找每个数的下一个比他大的数的位置。\( O(N^2) \) 的方法就简单说一下：对于每个数，都扫一遍他后面的所有数，找到第一个比他大的。&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&#34;special-img-class&#34; style=&#34;width:50%&#34; src=&#34;https://ericliu03.github.io/img/monotone_stack_img1.jpeg&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;那更快一点的方法呢？我们现在考虑如上图两种情况， 1中在a之前的点是单调递增的，所以对于每个数来说，下一个比他大的数就是他右边的数。假设b比a大，那么对于点a来说只有到了b点才能知道下一个大的数在哪。所以我们可以先把a存起来，直到遇到了比a大的b，再写到结果里说比a大的是b。对于图2，在b之前是单调递减的，所以直到b之前都不会遇到符合条件的数，所以我们都得存下来，等遇到b了，我们就可以把存下来的数中比b小的放到结果中，比b大的依然要等。&lt;/p&gt;
+
+&lt;p&gt;那么用什么数据结构来暂存这些数呢？关键点就是这些暂存的数字需要保持进入时的顺序，先进先出。所以我们用一个stack来存下暂时没有找到更大的数的数，每当来一个新数的时候就和stack中的数字比较一下，如果新数比stack的顶要大，那就说明栈顶的数的对应的数找到了，可以写入结果了。我们就把他pop出来，继续看栈顶，直到栈为空或者栈顶的数比新数大。可以看到这个stack里面的数单调递减的，原因是如果有increase的话，比如&lt;code&gt;a&amp;gt;b&amp;lt;c&lt;/code&gt;，那么b的答案其实就是c，一开始就不会放到stack里。&lt;/p&gt;
+
+&lt;p&gt;这就是monotone stack，&lt;a href=&#34;http://www.cnblogs.com/grandyang/p/8887985.html&#34; target=&#34;_blank&#34;&gt;这篇文章&lt;/a&gt;可以作为参考。&lt;/p&gt;
+
+&lt;p&gt;需要注意的一个细节是stack中存的不是数字（温度），而是数字的位置，这样我们在能用位置拿到数字的同时还能知道结果应该存在result数组的哪个位置。&lt;/p&gt;
+
+&lt;h4 id=&#34;code&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def dailyTemperatures(temps):
+    stack = []
+    result = [0] * len(temps)
+
+    for i, temp in enumerate(temps):
+        while stack and temp &amp;gt; temps[stack[-1]]:
+            result[stack[-1]] = i - stack[-1]
+            stack.pop()
+        stack.append(i)
+
+    return result
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;question-2&#34;&gt;Question 2&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://leetcode.com/problems/trapping-rain-water/&#34; target=&#34;_blank&#34;&gt;Leetcode 42: Trapping Rain Water&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it is able to trap after raining.&lt;/p&gt;
+
+&lt;h3 id=&#34;example-1&#34;&gt;Example&lt;/h3&gt;
+
+&lt;p&gt;&lt;img class=&#34;special-img-class&#34; style=&#34;width:50%&#34; src=&#34;https://ericliu03.github.io/img/monotone_stack_img2.png&#34; /&gt;
+The above elevation map is represented by array &lt;code&gt;T=[0,1,0,2,1,0,1,3,2,1,2,1]&lt;/code&gt;. In this case, 6 units of rain water (blue section) are being trapped.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: [0,1,0,2,1,0,1,3,2,1,2,1]
+Output: 6
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;solution-1&#34;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&#34;method-1-1&#34;&gt;Method 1&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis-1&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;本题有很多解法，这里还是讲monotone stack。与上题相同，stack应当还是monotonically decreasing的，因为只有遇到比栈顶高的bar，才有可能存住水。不同的地方在于当我们遇到比栈顶大的数的时候的所做的事情。&lt;/p&gt;
+
+&lt;p&gt;本题中，遇到比栈顶大的数之后我们就可以存水了。但是存水量的计算有点不intuitive，我们需要左右两遍的bar，和&lt;strong&gt;中间的坑&lt;/strong&gt;。我们稍微改变一下题目的例子，把&lt;code&gt;T[6]&lt;/code&gt;变成0。假设现在我们走到了&lt;code&gt;i = 3&lt;/code&gt;，前面的数都比2小所以都pop出去了，stack是&lt;code&gt;[2]&lt;/code&gt;。继续往后走直到&lt;code&gt;index = 6&lt;/code&gt;stack变成&lt;code&gt;[2,1,0,0]&lt;/code&gt;，下一步&lt;code&gt;T[7]=3&lt;/code&gt;，比stack的顶要大，可以作为右边的bar。 栈顶元素（0）就要变做坑，然后我们就继续pop，直到遇到了比坑高的（1）作为左边的bar。水量就是坑的长度乘以坑的深度（&lt;code&gt;min（左bar，右bar）- 坑底部的高度）&lt;/code&gt;。因为&lt;code&gt;T[3]=2&lt;/code&gt;还是比&lt;code&gt;T[7]&lt;/code&gt;小，我们再进行一次同样的水量计算。注意刚才左边的bar是没有取出来的，目的就是在这轮可以用作坑。或者从另一个角度理解，我们刚刚才左bar到右bar之间取出来水之后填上了土，所以坑的高度就变成了左bar。&lt;/p&gt;
+
+&lt;p&gt;不容易理解的地方就是，两次计算完毕你会发现水量是根据左bar或者右bar的高度横向计算的，在这个例子里从&lt;code&gt;T[4] -&amp;gt; T[7]&lt;/code&gt; 高度&lt;code&gt;1-0&lt;/code&gt;计算一次，然后&lt;code&gt;T[3] -&amp;gt; T[7]&lt;/code&gt;高度&lt;code&gt;2-1&lt;/code&gt;计算一次。双指针的解法中水量是竖向计算的。&lt;/p&gt;
+
+&lt;h4 id=&#34;code-1&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def trap(heights):
+    stack = []
+    result = 0
+
+    for i, h in enumerate(heights):
+        while stack and h &amp;gt; heights[stack[-1]]:
+            pit_h = heights[stack.pop()]
+            # we have to have a left bar to trap water
+            if stack:
+                result += (min(h, heights[stack[-1]]) - pit_h) * (i - stack[-1] - 1)
+        stack.append(i)
+
+    return result
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;question-3&#34;&gt;Question 3&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://leetcode.com/problems/largest-rectangle-in-histogram/&#34; target=&#34;_blank&#34;&gt;Leetcode 84: Largest Rectangle in Histogram&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Given n non-negative integers representing the histogram&amp;rsquo;s bar height where the width of each bar is 1, find the area of largest rectangle in the histogram.&lt;/p&gt;
+
+&lt;h3 id=&#34;example-2&#34;&gt;Example&lt;/h3&gt;
+
+&lt;p&gt;&lt;img class=&#34;special-img-class&#34; style=&#34;width:30%&#34; src=&#34;https://ericliu03.github.io/img/monotone_stack_img3.png&#34; /&gt;
+&lt;em&gt;Above is a histogram where width of each bar is 1, given height = [2,1,5,6,2,3].  The largest rectangle is shown in the shaded area, which has area = 10 unit.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;solution-2&#34;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&#34;method-1-2&#34;&gt;Method 1&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis-2&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;我们依然使用monotone stack的方式来解决这道题。与存水同样的思路，只有新数字小于栈顶时我们进行计算。计算的方式类似但是略有不同。以上图举例，当我们走到数字&lt;code&gt;2&lt;/code&gt;时，stack中是&lt;code&gt;[1,5,6]&lt;/code&gt;。&lt;code&gt;2&amp;lt;6&lt;/code&gt;所以开始计算，计算的方式是&lt;code&gt;木板的块数 * 栈顶木板的高度&lt;/code&gt;。计算完成后比较结果与目前的已知最大面积，然后pop 6出来，发现&lt;code&gt;2&amp;lt;5&lt;/code&gt;所以再次计算，直到栈顶数字小于当前数字。之后我们把2push进入之后继续往后走直到结束。存的最大面积就是结果。&lt;/p&gt;
+
+&lt;p&gt;这里模板的块数的计算有点tricky。如上图所示，当我们走到最后的时候，stack中是&lt;code&gt;[1,2,3]&lt;/code&gt;。以高度3为顶的计算就是&lt;code&gt;(6-5) * 3&lt;/code&gt;，但是当pop出3之后，以2为顶计算时，左边界index不是4，而是2。因为我们知道2左边被pop出去的板子都比2高，所以我们计算面积时应该把那些板子都算进去。那么怎么找pop出了多少呢？如果stack中还有数字的话，那么2左边的那个就是第一个比2小的，如果没有就说明2就是最小的我们应该把0作为左边界。&lt;/p&gt;
+
+&lt;p&gt;有几点可能对理解有所帮助：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;木板面积可以这样计算的原因是我们进行了类似于&lt;em&gt;填坑&lt;/em&gt; 的削顶，也就是说当把6拿出来之后，我们看到下一个数字是5，那么我们就知道 1.目前最矮的是5，2. pop出去的都比5高，所以形成的正方形肯定最高就是5，横向长度就是目前为止到这个高度为5的板子的距离。&lt;/li&gt;
+&lt;li&gt;计算板子面积不需要像存水一样有左右bar和坑，我们需要左右边界。
+
+&lt;ol&gt;
+&lt;li&gt;在给定的输入最后填上一个0作为空的右边界，以保证最后一块板子也参与了计算。&lt;/li&gt;
+&lt;li&gt;计算面积时如果stack为空那么左边界就是0。&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+&lt;li&gt;每块板子的所有组成的方块其实都被显式或者隐式的计算过。比如上面计算6 * 1 的时候就是6作为方块的唯一一块板子，下一步5 * 2的时候6其实也包含在了板子中。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;推荐看一下reference 4，博主配上了很多图片便于理解。但是博客给的图片关于计算面积是有错误的，他的左边界是选的当前栈顶的位置。&lt;/p&gt;
+
+&lt;h4 id=&#34;code-2&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def largestRectangleArea(heights):
+    heights.append(0)
+    stack = []
+    result = 0
+
+    for i, h in enumerate(heights):
+        while stack and heights[stack[-1]] &amp;gt; h:
+            bar_i = stack.pop()
+            l_i = stack[-1] + 1 if stack else 0
+            result = max(result, (i - l_i) * heights[bar_i])
+        stack.append(i)
+
+    return result
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;其他可以使用Monotone stack解的题目
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://leetcode.com/problems/next-greater-element-i/&#34; target=&#34;_blank&#34;&gt;Leetcode 496&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://leetcode.com/problems/next-greater-node-in-linked-list/&#34; target=&#34;_blank&#34;&gt;Leetcode 1019&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.cnblogs.com/grandyang/p/8887985.html&#34; target=&#34;_blank&#34;&gt;LeetCode Monotone Stack Summary 单调栈小结&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.cnblogs.com/grandyang/p/4402392.html&#34; target=&#34;_blank&#34;&gt;解法：Trapping Rain Water 收集雨水&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.cnblogs.com/lichen782/p/leetcode_Largest_Rectangle_in_Histogram.html&#34; target=&#34;_blank&#34;&gt;LeetCode 笔记系列 17 Largest Rectangle in Histogram&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://fisherlei.blogspot.com/2012/12/leetcode-largest-rectangle-in-histogram.html&#34; target=&#34;_blank&#34;&gt;水中的鱼：Largest Rectangle in Histogram 解题报告&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Maximum Difference Between Node and Ancestor</title>
+      <link>https://ericliu03.github.io/posts/2019/04/maximum_diff_between_node_and_ancestor/</link>
+      <pubDate>Tue, 16 Apr 2019 21:16:39 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/maximum_diff_between_node_and_ancestor/</guid>
+      <description>
+
+&lt;h2 id=&#34;question&#34;&gt;Question&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://leetcode.com/problems/maximum-difference-between-node-and-ancestor/&#34; target=&#34;_blank&#34;&gt;Leetcode 1026&lt;/a&gt;:
+Given the root of a binary tree, find the maximum value &lt;code&gt;V&lt;/code&gt; for which there exists &lt;strong&gt;different&lt;/strong&gt; nodes A and B where &lt;code&gt;V = |A.val - B.val|&lt;/code&gt; and A is an ancestor of B.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;(A node A is an ancestor of B if either: any child of A is equal to B, or any child of A is an ancestor of B.)&lt;/em&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class TreeNode:
+    def __init__(self, x):
+        self.val = x
+        self.left = None
+        self.right = None
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
+
+&lt;p&gt;&lt;img class=&#34;special-img-class&#34; style=&#34;width:50%&#34; src=&#34;https://ericliu03.github.io/img/maximum_diff_between_node_and_ancestor_img1.jpg&#34; /&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: [8,3,10,1,6,null,14,null,null,4,7,13]
+Output: 7
+Explanation: 
+We have various ancestor-node differences, some of which are given below :
+|8 - 3| = 5
+|3 - 7| = 4
+|8 - 1| = 7
+|10 - 13| = 3
+Among all possible differences, the maximum value of 7 is obtained by |8 - 1| = 7.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;solution&#34;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&#34;method-1&#34;&gt;Method 1&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;Bottom up solution: we collect results from a node&amp;rsquo;s left and right child and calculate result of this node&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;each node will need three things from both left and right child
+
+&lt;ol&gt;
+&lt;li&gt;min and max num in subtree (for calculating this node&amp;rsquo;s difference with it&amp;rsquo;s max and min decendents)&lt;/li&gt;
+&lt;li&gt;max diff in subtree&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+&lt;li&gt;combine the results given from children&lt;/li&gt;
+&lt;li&gt;calculate result with current node&amp;rsquo;s value and return&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&#34;code&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def maxAncestorDiff(root):
+    if root is None:
+        return 0
+    else:
+        return helper(root)[2]
+
+
+def helper(node):
+    min_num = max_num = node.val
+    diff = 0
+    
+    if node.left:
+        temp = helper(node.left)
+        min_num = min(min_num, temp[0])
+        max_num = max(max_num, temp[1])
+        diff = max(diff, temp[2])
+    if node.right:
+        temp = helper(node.right)
+        min_num = min(min_num, temp[0])
+        max_num = max(max_num, temp[1])
+        diff = max(diff, temp[2])
+    
+    diff = max(diff, max(abs(node.val - min_num), abs(node.val - max_num)))
+    
+    return min_num, max_num, diff
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;method-2&#34;&gt;Method 2&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis-1&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;Top down solution: the question is about nodes and their ancestors so we don&amp;rsquo;t need to gather and combine results from both children to calculate result&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;function is given min and max of numbers in the path from root to current node&lt;/li&gt;
+&lt;li&gt;update min or max with current node&amp;rsquo;s value and pass it to it&amp;rsquo;s children&lt;/li&gt;
+&lt;li&gt;when we reached the leaf, we calculate the result by using this min and max nums&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def maxAncestorDiff(root):
+    return helper(root, root.val, root.val)
+
+
+def helper(node, lo, hi):
+    if node is None:
+        return hi - lo
+
+    lo = min(lo, node.val)
+    hi = max(hi, node.val)
+
+    return max(helper(node.left, lo, hi), helper(node.right, lo, hi))
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Longest Increasing Subsequence (Chinese)</title>
+      <link>https://ericliu03.github.io/posts/2019/04/longest_increasing_subsequence/</link>
+      <pubDate>Mon, 15 Apr 2019 20:03:06 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/longest_increasing_subsequence/</guid>
+      <description>
+
+&lt;h2 id=&#34;question&#34;&gt;Question&lt;/h2&gt;
+
+&lt;p&gt;This question is from &lt;a href=&#34;https://leetcode.com/problems/longest-increasing-subsequence/&#34; target=&#34;_blank&#34;&gt;Leetcode 300&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Given an unsorted array of integers, find the length of longest increasing subsequence.&lt;/p&gt;
+
+&lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: [10,9,2,5,3,7,101,18]
+Output: 4 
+Explanation: The longest increasing subsequence is [2,3,7,101], therefore the length is 4. 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;note&#34;&gt;Note&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;There may be more than one LIS combination, it is only necessary for you to return the length.&lt;/li&gt;
+&lt;li&gt;Your algorithm should run in \( O(N^2) \) complexity.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;method-1&#34;&gt;Method 1&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;可以使用Brute force的方法来解决这个问题。
+具体来说我们需要试一下所有可能的组合：对于每一个数&lt;strong&gt;x&lt;/strong&gt;，他本身加上他后面的任意一个比他大的数&lt;strong&gt;y&lt;/strong&gt;都可以组成一个increasing subsequence。如果我们已经知道了以&lt;strong&gt;y&lt;/strong&gt;开头（对，就是recursion的思想），最长能组成的subsequence的长度，我们就知道了以&lt;strong&gt;x&lt;/strong&gt;和&lt;strong&gt;y&lt;/strong&gt;开头的最长的长度。但是选y只是以x开头的increasing subsequence的可能性之一。或许有一个数字&lt;strong&gt;z&lt;/strong&gt;也符合条件（比x大，在x的后面），如果以z开头的increasing subsequence 的最长长度比以y开头的长，那么对于x来说，更好地选项就是接上z，以xz开头。 所以，为了知道最长的到底是那个，需要把后面所有符合条件的数都拿来试一下，然后选那个最长的。
+时间复杂度是\( O(N!) \)：对于第一个数字，需要进行 (n-1) * (n-2) * &amp;hellip; * 1，第二个是 (n-2) * (n-3) * &amp;hellip; * 1, 第n个是1。&lt;/p&gt;
+
+&lt;p&gt;Leetcode也提供了&lt;a href=&#34;https://leetcode.com/problems/longest-increasing-subsequence/solution/&#34; target=&#34;_blank&#34;&gt;另一种BF&lt;/a&gt;的方法。那个方法对于recursion function的定义不同，时间复杂度也只有O(2^n)。原因是相比于上面的方法，在每个点只进行了两次recursion call，而不是n次。&lt;/p&gt;
+
+&lt;p&gt;你应该能发现我们recursion function的定义，是求以当前数字作为开头，最长的increasing subsequence的长度。既然是最长，那么也就是说只要给定start位置和list，这个结果就只有一个。然而在上面的算法中，对于同一个点我们计算了很多次（对于每个数，我们计算的次数等于他前面比他小的数字的数量）。所以我们可以把计算的结果存起来，只计算一次。&lt;/p&gt;
+
+&lt;p&gt;那么时间复杂度就变成了\( O(N^2) \)，因为对于每个点，我们依然要看一下剩下符合要求的点的最长长度然后计算出自己的长度。&lt;/p&gt;
+
+&lt;h4 id=&#34;code&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class Solution:
+    def lengthOfLIS(self, nums: List[int]) -&amp;gt; int:
+        if not nums:
+            return 0
+        self.memo = {}
+        return max([self.helper(i, nums) for i in range(len(nums))])
+    
+    def helper(self, start, nums):
+        if start not in self.memo:
+            result = 0
+            for i in range(start+1, len(nums)):
+                if nums[i] &amp;gt; nums[start]:
+                    result = max(result, self.helper(i, nums))
+            self.memo[start] = result+1
+            
+        return self.memo[start]
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;method-2&#34;&gt;Method 2&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis-1&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;一般来说recursion的问题都可以优化成DP的解法，此题就是如此。我们上面说&lt;strong&gt;这里recursion function的定义，是求以当前数字作为开头，最长的increasing subsequence的长度&lt;/strong&gt;。在recursion中， 我们是从前往后call recursion function，但是实际计算是从后往前。换句话说，我们每一层recursion都需要后面一层的结果，所以第一个真正计算出的结果是最后一层，也就是&lt;strong&gt;以最后一个数字作为开头的最长的长度&lt;/strong&gt;（那便是1啦）。如果按照真正计算的顺序（即从右向左）计算，然后记录下来计算结果后给后面的计算使用，就是DP的解法。&lt;/p&gt;
+
+&lt;p&gt;在LC中提供的DP解法是反过来，从左向右计算，随之而变化的是存的每个点的数据的定义，也变为&lt;strong&gt;以当前数字为结尾，最长increasing subsequence的长度&lt;/strong&gt;。所以对于每一个数字，我们都需要看一下符合条件的数，也即在他前面且比他小的数（可以看到是正好反过来的），找出最长的作为当前数字的结果。从前往后是自然而然的顺序，但是如果是用BF的方法推导过来，却是需要转换一下才可。&lt;/p&gt;
+
+&lt;h4 id=&#34;code-1&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def lengthOfLIS(nums):
+    if not nums:
+        return 0
+
+    dp = [1] * len(nums)
+
+    for hi in range(len(nums)):
+        for lo in range(hi):
+            if nums[lo] &amp;lt; nums[hi]:
+                dp[hi] = max(dp[hi], dp[lo] + 1)
+    return max(dp)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;follow-up-1&#34;&gt;Follow up 1&lt;/h3&gt;
+
+&lt;h4 id=&#34;question-1&#34;&gt;Question&lt;/h4&gt;
+
+&lt;p&gt;From &lt;a href=&#34;https://leetcode.com/problems/number-of-longest-increasing-subsequence/&#34; target=&#34;_blank&#34;&gt;Leetcode 673&lt;/a&gt;:
+Given an unsorted array of integers, find the number of longest increasing subsequence.&lt;/p&gt;
+
+&lt;h4 id=&#34;examples-1&#34;&gt;Examples&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;Example 1:
+Input: [1,3,5,4,7]
+Output: 2
+Explanation: The two longest increasing subsequence are [1, 3, 4, 7] and [1, 3, 5, 7].
+Example 2:
+Input: [2,2,2,2,2]
+Output: 5
+Explanation: The length of longest continuous increasing subsequence is 1, and there are 5 subsequences&#39; length is 1, so output 5.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;analysis-2&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;这个题目和上面题目唯一不同的地方就是之前的是求最长的长度，这个是求拥有最长长度的subsequence有多少个。如果你walk through了之前的DP解法就会发现，同样长度的结果的确可能遇到过多个。比如我们在例子1中最后一个数字7的时候，在index为2和3（就是数字5和4）时，DP[2]和DP[3]都应该等于3，因为135和134长度都为3。那么在上面DP解法第十行的&lt;code&gt;dp[j] = max(dp[j], dp[i] + 1)&lt;/code&gt;就是说明dp[j]等于dp[i]+1。&lt;/p&gt;
+
+&lt;p&gt;在本题目中我们需要记录下来遇到这种情况的数量，也就是在每一位不仅记录以当前为结尾数字的subsequence的最大长度，也记录有此长度的不同subsequence有多少个。这样一来，最后的时候我们就可以使用整个dp数组中最长的那个长度，作为整个数组的最长度，再用这个长度去找总共这个长度的subsequence有多少个。&lt;/p&gt;
+
+&lt;h4 id=&#34;code-2&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def numberOfLIS(nums):
+        if not nums:
+            return 0
+        
+        dp = [1] * len(nums)
+        counts = [1] * len(nums)
+        
+        for hi in range(len(nums)):
+            for lo in range(hi):
+                if nums[lo] &amp;lt; nums[hi]:
+                    if dp[hi] &amp;lt; dp[lo] + 1:
+                        dp[hi] = dp[lo] + 1
+                        counts[hi] = counts[lo]
+                    elif dp[hi] == dp[lo] + 1:
+                        counts[hi] += counts[lo]
+
+        max_len  = max(dp)
+        return sum([counts[i] for i in range(len(nums)) if dp[i] == max_len])
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;follow-up-2&#34;&gt;Follow up 2&lt;/h3&gt;
+
+&lt;h4 id=&#34;question-2&#34;&gt;Question&lt;/h4&gt;
+
+&lt;p&gt;From &lt;a href=&#34;https://leetcode.com/problems/longest-arithmetic-sequence/&#34; target=&#34;_blank&#34;&gt;Leetcode 1027&lt;/a&gt;:
+Given an array A of integers, return the length of the longest arithmetic subsequence in A.&lt;/p&gt;
+
+&lt;p&gt;Recall that a subsequence of A is a list &lt;code&gt;A[i_1], A[i_2], ..., A[i_k]&lt;/code&gt; with &lt;code&gt;0 &amp;lt;= i_1 &amp;lt; i_2 &amp;lt; ... &amp;lt; i_k &amp;lt;= A.length - 1&lt;/code&gt;, and that a sequence B is arithmetic if &lt;code&gt;B[i+1] - B[i]&lt;/code&gt; are all the same value (for &lt;code&gt;0 &amp;lt;= i &amp;lt; B.length - 1&lt;/code&gt;).&lt;/p&gt;
+
+&lt;h4 id=&#34;examples-2&#34;&gt;Examples&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;Example 1
+Input: [9,4,7,2,10]
+Output: 3
+Explanation: 
+The longest arithmetic subsequence is [4,7,10].
+
+Example 2:
+Input: [20,1,15,3,10,5,8]
+Output: 4
+Explanation: 
+The longest arithmetic subsequence is [20,15,10,5].
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;analysis-3&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;看过了上面这么多题目和解法，看到这应该有感觉到需要用类似的方法做。和原题唯一的区别就是条件：原题的条件是右边的数大于左边的数，此题的条件是右边的数减左边的数等于一个差值。这个差值是由subsequence的头两个数决定的。同样的，我们可以用一个数组&lt;code&gt;dp[]&lt;/code&gt;来存以当前数字为结尾的subsequence的最长长度，但不同的是对于不一样的差值可以会有相同或者不同的最长长度，比如例子1中，以7结尾，差值为-2时，长度为2，差值为3时长度也为2（未出现的差值我们可以不记录）。在比如当到了10的时候，差值为3是就是3（接上了7），其他的（比如1，6等等）最长的只有2了。所以我们可以想到，对于每一个数字的每一种可能的差值，我们都需要记录下来其最长subsequence的长度，以备后面的数字使用。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def longestArithSeqLength(nums):
+    dp = [collections.defaultdict(int) for _ in range(len(nums))]
+    result = 0
+    
+    for hi in range(len(nums)):
+        for lo in range(hi):
+            diff = nums[hi] - nums[lo]
+            dp[hi][diff] = max(dp[hi][diff], dp[lo][diff] + 1)
+            result = max(result, dp[hi][diff])        
+    return result + 1	
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;后记&#34;&gt;后记&lt;/h3&gt;
+
+&lt;p&gt;这篇文章其实是收到了最后一个题目（follow up2）的启发，是在做LC contest的时候遇到的。回忆起来，当时感觉题目有点熟悉，但没想到和原题的关联。当时只想到了BF算法，自然也超时了。理论上用BF加memo的方法也可以做，但是因为加入了diff的缘故导致稍微有点复杂，就被绕晕了。想要思路清晰的快速解题，还是要熟练啊&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Inorder Predecessor</title>
+      <link>https://ericliu03.github.io/posts/2019/04/inorder_predecessor/</link>
+      <pubDate>Sat, 13 Apr 2019 21:55:51 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/inorder_predecessor/</guid>
+      <description>
+
+&lt;h2 id=&#34;question&#34;&gt;Question&lt;/h2&gt;
+
+&lt;p&gt;Given a node in a binary tree, return the inorder predecessor of that node. If it doesn&amp;rsquo;t exist, return null. Both input and output should be node objects.&lt;/p&gt;
+
+&lt;p&gt;Node is given as an object with pointers to it&amp;rsquo;s left child, right child and parent.&lt;/p&gt;
+
+&lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
+
+&lt;h4 id=&#34;example-1&#34;&gt;Example 1&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code&gt;     A
+    / \
+   B   C
+  / \
+ D   E
+    /
+   F
+
+In order traversal: DBFEAC
+If give A, then return should be E. 
+If give C, should return A. 
+If give F, should return B. 
+If give D, return null.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;algorithm&#34;&gt;Algorithm&lt;/h2&gt;
+
+&lt;h4 id=&#34;method-1&#34;&gt;Method 1&lt;/h4&gt;
+
+&lt;h4 id=&#34;analysis&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;First, there are &lt;a href=&#34;https://en.wikipedia.org/wiki/Tree_traversal&#34; target=&#34;_blank&#34;&gt;several ways&lt;/a&gt; to traverse a tree, and in the problem it&amp;rsquo;s using in-order traversal. Basically, in-order traversal is to &amp;ldquo;display root node at &lt;em&gt;in&lt;/em&gt; position&amp;rdquo;, i.e. 1. display left subtree, display root and display right sub tree. Something like this: &lt;strong&gt;[left-subtree-inorder-list] + root + [right-subtree-inorder-list]&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;For this question, the easiest way is to find the root of the tree using the pointer to parent in each node, and do a in-order traversal to generate a list. The time and space complexity would be O(n). Can we do better?&lt;/p&gt;
+
+&lt;h4 id=&#34;method-2&#34;&gt;Method 2&lt;/h4&gt;
+
+&lt;h4 id=&#34;analysis-1&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;We have the pointer to parents, so we should be able to go anywhere in the graph. The question is where to go?&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s say &lt;strong&gt;X&lt;/strong&gt; is the node given:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Case 1: if X has left child as &lt;strong&gt;A&lt;/strong&gt; in example. Then we are sure it&amp;rsquo;s predecessor is in it&amp;rsquo;s left subtree, and it should be the last node of the subtree&amp;rsquo;s inorder list. The last node in the in-order traversal of a tree will be the right most node in the tree. As a result, &lt;strong&gt;we go left, and go right until no right child.&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Case 2: if X doesn&amp;rsquo;t have left child, it means in the subtree where X is the root, X is the first node in it&amp;rsquo;s inorder list. We have to find it&amp;rsquo;s predecessor outside of this subtree. So thinking about X&amp;rsquo;s parent &lt;strong&gt;Y&lt;/strong&gt;,
+
+&lt;ul&gt;
+&lt;li&gt;Case 2.1: if X is Y&amp;rsquo;s right child as &lt;strong&gt;C&lt;/strong&gt; in example, Y will the X&amp;rsquo;s predecessor: X is the first node (in-order) in Y&amp;rsquo;s right subtree.&lt;/li&gt;
+&lt;li&gt;Case 2.2: if X is Y&amp;rsquo;s left child as &lt;strong&gt;F&lt;/strong&gt; in example, then Y will not be the predecessor: Y&amp;rsquo;s right subtree plus Y will be after X in the in-order list. &lt;strong&gt;X will still be the first node in the inorder list that generated from the subtree with Y as the root&lt;/strong&gt;. Then if we go one level up to Y&amp;rsquo;s parent &lt;strong&gt;Z&lt;/strong&gt;, it will be a similar situation: if Y is Z&amp;rsquo;s left child, Z plus all the nodes in Z&amp;rsquo;s right subtree will be after Y, and thus X, in the inorder list. We have to go up, until we meet a case like case 2.1, where &lt;strong&gt;Y*&lt;/strong&gt; is &lt;strong&gt;Z*&amp;rsquo;s&lt;/strong&gt; right child. In this case, in subtree with Z* as root, Z* will be in the middle, and X is the first node in the inorder list of Z*&amp;rsquo;s right subtree, which means X&amp;rsquo;s predecessor is Z*.&lt;/li&gt;
+&lt;li&gt;Case 2.3: As &lt;strong&gt;D&lt;/strong&gt; in example, If we can&amp;rsquo;t find a node like Z* and we don&amp;rsquo;t have a &amp;ldquo;parent&amp;rdquo; to go up any more, then it means X is the first node in the inorder list and we should return null.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;code&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def inorder_predecessor(node):
+    if node is None:
+        return None
+
+    if node.left is not None:
+        curr = node.left
+        while curr.right:
+            curr = curr.right
+        return curr
+    else:
+        while node.parent:
+            if node.parent.right == node:
+                return node.parent
+            else:
+                node = node.parent
+        return None
+
+class Node:
+    def __init__(self, val, parent):
+        self.val = val
+        self.parent = parent
+        self.left = None
+        self.right = None
+
+    def __str__(self):
+        return self.val
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Minimum Point to Traverse Graph</title>
+      <link>https://ericliu03.github.io/posts/2019/04/minimum_point_to_traverse_graph/</link>
+      <pubDate>Wed, 10 Apr 2019 15:38:14 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/minimum_point_to_traverse_graph/</guid>
+      <description>
+
+&lt;h2 id=&#34;question&#34;&gt;Question&lt;/h2&gt;
+
+&lt;p&gt;There is a directed graph and you can traverse the nodes in this graph by following the directed edges. You can start from any node in this graph and you can pick nodes as start points as many as you needed. What is the minimum number of nodes as start points you need to traverse all the nodes?&lt;/p&gt;
+
+&lt;p&gt;You will be given a number n as number of vertices in the graph, and a list contains all the edges in the graph.&lt;/p&gt;
+
+&lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
+
+&lt;p&gt;Example 1:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;input: 4, [[0,1], [1,2],[2,3]]
+output: 1. we just need to pick 1 as start point and will be able to traverse the whole graph
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 2:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;input: 4, [[2,1], [3,1],[0,1]]
+output: 3. we have to start from 2,3 and 4 to reach all the nodes
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 3:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;input: 6, [[0,1], [1,2], [2,0], [2,3], [3,4], [4,5], [5,3]]
+output: 1, we could start from 3, then we could go through 0-&amp;gt;1-&amp;gt;2-&amp;gt;0, and 2-&amp;gt;3-&amp;gt;4-&amp;gt;5-&amp;gt;3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 4:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;input: 5, [[0, 1], [1, 2], [2, 3], [3, 0], [4, 0]]
+output: 1, we start from 4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;algorithm&#34;&gt;Algorithm&lt;/h2&gt;
+
+&lt;h3 id=&#34;method-1&#34;&gt;Method 1&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;Starting from the problem description, the most straightforward is to use a recursive method. We could have a loop of all the nodes in the graph. We treat each node as a start point of a DFS and see if we can traverse the whole graph. If yes, then we return 1 since we used 1 node as start point. If not, then we go 1 level deeper in the recursive function, which is another loop of the nodes, but here instead of all the nodes, we only use the nodes we can&amp;rsquo;t reach in the previous DFS. We should be able to get one result for each node that picked as starting point. We choose the smallest number among those and plus one to return as the nodes needed to cover all the nodes.&lt;/p&gt;
+
+&lt;h4 id=&#34;code&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import collections
+
+def minimum_nodes(n, edges):
+    outdegrees = collections.defaultdict(set)
+    for u, v in edges:
+        outdegrees[u].add(v)
+
+    result = float(&#39;inf&#39;)
+    unvisited = set([i for i in range(n)])
+    for i in range(n):
+        result = min(result, dfs(i, outdegrees, unvisited))
+        print(result, i)
+    return result
+
+
+def dfs(start, outdegrees, unvisited):
+    unvisited_set = unvisited.copy()
+    queue = [start]
+    while queue:
+        curr_node = queue.pop(0)
+        if curr_node in unvisited_set:
+            unvisited_set.remove(curr_node)
+            for neighbor in outdegrees[curr_node]:
+                queue.append(neighbor)
+
+    if len(unvisited_set) == 0:
+        return 1
+    else:
+        result = float(&#39;inf&#39;)
+        for unvisited in unvisited_set:
+            result = min(result, dfs(unvisited, outdegrees, unvisited_set))
+        return result + 1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;method-2&#34;&gt;Method 2&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis-1&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;Thinking about the recursive function, we should notice that we did a lot duplicated works there. (Actually, if the problem is not asking for all possible ways/permutations, then there should always be duplicated works.) In this way, this could be optimized using idea of &lt;a href=&#34;https://en.wikipedia.org/wiki/Dynamic_programming&#34; target=&#34;_blank&#34;&gt;Dynamic Programing&lt;/a&gt;. There are two general ways of doing DP, 1. use a map to remember what&amp;rsquo;s the result from a start point (in this problem the start point is the node we choose as start), and go through the path using recursive function 2. use a n-Dimension array to store the result and derive results from previous results.
+Here we could use the first way to remember the result of &lt;strong&gt;the nodes we could reach when starting from node u&lt;/strong&gt;. Then each time we start the DFS, we first check if we have already examen that node as start point and if we do return the result.&lt;/p&gt;
+
+&lt;h4 id=&#34;code-1&#34;&gt;Code&lt;/h4&gt;
+
+&lt;p&gt;This is similar to method 1, just we remember the results we already have. But the code looks messier =|&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def minimum_nodes(n, edges):
+    memo = {}
+    outdegrees = collections.defaultdict(set)
+    for u, v in edges:
+        outdegrees[u].add(v)
+
+    result = float(&#39;inf&#39;)
+    unvisited = set([i for i in range(n)])
+    for i in range(n):
+        result = min(result, dfs(i, memo, outdegrees, unvisited))
+        print(result, i)
+    return result
+
+
+def dfs(start, memo, outdegrees, unvisited):
+    if start in memo:
+        return memo[start]
+    unvisited_set = unvisited.copy()
+    queue = [start]
+    while queue:
+        curr_node = queue.pop(0)
+        if curr_node in unvisited_set:
+            unvisited_set.remove(curr_node)
+            for neighbor in outdegrees[curr_node]:
+                queue.append(neighbor)
+
+    result = float(&#39;inf&#39;)
+    if len(unvisited_set) == 0:
+        result = 1
+    else:
+        for unvisited in unvisited_set:
+            result = min(result, dfs(unvisited, memo, outdegrees, unvisited_set))
+        result += 1
+
+    memo[start] = result
+    return result
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;method-3&#34;&gt;Method 3&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis-2&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;Instead of remembering everything in a map during the recursion, we could remember something else. There are two things we need, 1. the vertices we already visited in &lt;code&gt;visited&lt;/code&gt;, 2. the start points we choose in &lt;code&gt;start_points&lt;/code&gt;. Still, we loop through every vertex, say &lt;strong&gt;u&lt;/strong&gt; in the graph that not in &lt;code&gt;visited&lt;/code&gt;, do a search (either DFS or BFS) to get all the vertices that could be reached started with &lt;strong&gt;u&lt;/strong&gt;. The following is the &lt;strong&gt;key&lt;/strong&gt; to this algorithm: 1. we add those reached vertices to &lt;code&gt;visited&lt;/code&gt;, so we won&amp;rsquo;t do duplicated work, 2. if in the reached vertices, there&amp;rsquo;s any &lt;strong&gt;start points we chose, we remove those start points,&lt;/strong&gt; from &lt;code&gt;start_points&lt;/code&gt;. 3. add &lt;strong&gt;u&lt;/strong&gt; to &lt;code&gt;start_points&lt;/code&gt;. This is because we could reach the &lt;strong&gt;removed start points&lt;/strong&gt; from &lt;strong&gt;u&lt;/strong&gt;, and thus the vertices that the old start vertex can reach. So there&amp;rsquo;s no need to keep the old start point anymore.&lt;/p&gt;
+
+&lt;h4 id=&#34;code-2&#34;&gt;Code&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def minimum_nodes3(n, edges):
+    outdegrees = collections.defaultdict(set)
+    for u, v in edges:
+        outdegrees[u].add(v)
+
+    visited = set()
+    starts = set()
+    for vertex in range(n):
+        if vertex in visited:
+            continue
+
+        reached = get_reached(vertex, outdegrees)
+        for s in list(starts):
+            if s in reached:
+                starts.remove(s)
+        visited.update(reached)
+        starts.add(vertex)
+
+    return len(starts)
+
+
+def get_reached(start, outdegrees):
+    visited = set()
+    queue = [start]
+    while queue:
+        curr_node = queue.pop(0)
+        if curr_node in visited:
+            continue
+
+        visited.add(curr_node)
+        for neighbor in outdegrees[curr_node]:
+            queue.append(neighbor)
+
+    return visited
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;method-4&#34;&gt;Method 4&lt;/h3&gt;
+
+&lt;h4 id=&#34;analysis-3&#34;&gt;Analysis&lt;/h4&gt;
+
+&lt;p&gt;In the graph theory, there&amp;rsquo;s a concept called &lt;a href=&#34;https://en.wikipedia.org/wiki/Strongly_connected_component&#34; target=&#34;_blank&#34;&gt;&lt;strong&gt;Strongly Connected Component(SCC)&lt;/strong&gt;&lt;/a&gt;. If you don&amp;rsquo;t know you should read about it. In short, all nodes in a SCC has a path to go to any other nodes in the same SCC. So what we need from it for this problem is that we want to treat the nodes in same SCC as one single node in a graph. After that the graph will be a DAG, and we just need to count how many nodes don&amp;rsquo;t have incoming edges (i.e. 0 in-degree). Those nodes will be the start points.&lt;/p&gt;
+
+&lt;p&gt;In reference 1, code for this solution is given, which used Tarjan Algorithm. I attached some great explanation in reference for this algorithm. I will write my understanding of Tarjan in the following. It uses a stack to represent the vertices that are currently visiting, and it uses &lt;code&gt;dfn[u]&lt;/code&gt; to store IDs of vertices and &lt;code&gt;low[u]&lt;/code&gt; to represent the vertex with lowest ID it can reach. As an example, is 6 can reach 4 (so &lt;code&gt;low[6] = 4&lt;/code&gt;), and 4 can reach 1 (&lt;code&gt;low[4] = 1&lt;/code&gt;). From this we know 6 can reach 1 but during the algorithm this will not be recorded directly in &lt;code&gt;low&lt;/code&gt;. If &lt;code&gt;low[x]&lt;/code&gt; equals to x itself, then it means it can&amp;rsquo;t go back any further, and it will be recognized as &lt;em&gt;root&lt;/em&gt; of this SCC. Thus all the vertices in the stack and pushed later then this &lt;em&gt;root&lt;/em&gt; (i.e. we are visiting) will belongs to this SCC. This is because from this &lt;em&gt;root&lt;/em&gt; we reached all those vertices, and somehow those vertices can comes back to this &lt;em&gt;root&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;In my opinion this is way more complicated in an interview, so I will just skip it here.&lt;/p&gt;
+
+&lt;h2 id=&#34;reference&#34;&gt;Reference&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.1point3acres.com/bbs/forum.php?mod=viewthread&amp;amp;tid=319799&#34; target=&#34;_blank&#34;&gt;[树/链表/图] 求教Airbnb的graph traversal问题 &lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://blog.miskcoo.com/2016/07/tarjan-algorithm-strongly-connected-components&#34; target=&#34;_blank&#34;&gt;Tarjan算法寻找有向图的强连通分量&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.csdn.net/hurmishine/article/details/75248876&#34; target=&#34;_blank&#34;&gt;全网最!详!细!Tarjan算法讲解&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.cnblogs.com/nullzx/p/6437926.html&#34; target=&#34;_blank&#34;&gt;Kosaraju算法解析: 求解图的强连通分量&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.csdn.net/dm_vincent/article/details/8554244&#34; target=&#34;_blank&#34;&gt;求解强连通分量算法之&amp;mdash;Kosaraju算法&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Video Stitching</title>
+      <link>https://ericliu03.github.io/posts/2019/04/video_stitching/</link>
+      <pubDate>Mon, 08 Apr 2019 20:01:29 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/video_stitching/</guid>
+      <description>
+
+&lt;p&gt;This is a question from &lt;a href=&#34;https://leetcode.com/problems/video-stitching/&#34; target=&#34;_blank&#34;&gt;leetcode.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;problem&#34;&gt;Problem&lt;/h2&gt;
+
+&lt;h3 id=&#34;question&#34;&gt;Question&lt;/h3&gt;
+
+&lt;p&gt;You are given a series of video clips from a sporting event that lasted T seconds.  These video clips can be overlapping with each other and have varied lengths.&lt;/p&gt;
+
+&lt;p&gt;Each video clip &lt;code&gt;clips[i]&lt;/code&gt; is an interval: it starts at time &lt;code&gt;clips[i][0]&lt;/code&gt; and ends at time &lt;code&gt;clips[i][1]&lt;/code&gt;.  We can cut these clips into segments freely: for example, a clip &lt;code&gt;[0, 7]&lt;/code&gt; can be cut into segments &lt;code&gt;[0, 1] + [1, 3] + [3, 7]&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Return the minimum number of clips needed so that we can cut the clips into segments that cover the entire sporting event (&lt;code&gt;[0, T]&lt;/code&gt;).  If the task is impossible, return &lt;code&gt;-1&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
+
+&lt;p&gt;Example 1:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: clips = [[0,2],[4,6],[8,10],[1,9],[1,5],[5,9]], T = 10
+Output: 3
+Explanation: 
+We take the clips [0,2], [8,10], [1,9]; a total of 3 clips.
+Then, we can reconstruct the sporting event as follows:
+We cut [1,9] into segments [1,2] + [2,8] + [8,9].
+Now we have segments [0,2] + [2,8] + [8,10] which cover the sporting event [0, 10].
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 2:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: clips = [[0,1],[1,2]], T = 5
+Output: -1
+Explanation: 
+We can&#39;t cover [0,5] with only [0,1] and [0,2].
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 3:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: clips = [[0,1],[6,8],[0,2],[5,6],[0,4],[0,3],[6,7],[1,3],[4,7],[1,4],[2,5],[2,6],[3,4],[4,5],[5,7],[6,9]], T = 9
+Output: 3
+Explanation: 
+We can take clips [0,4], [4,7], and [6,9].
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Example 4:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: clips = [[0,4],[2,8]], T = 5
+Output: 2
+Explanation: 
+Notice you can have extra video after the event ends.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;1 &amp;lt;= clips.length &amp;lt;= 100
+0 &amp;lt;= clips[i][0], clips[i][1] &amp;lt;= 100
+0 &amp;lt;= T &amp;lt;= 100
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;analysis&#34;&gt;Analysis&lt;/h2&gt;
+
+&lt;p&gt;If we take the core of the problem out, what we need to find is minimum number of ranges that covers [0, T].&lt;/p&gt;
+
+&lt;p&gt;We can start with 0, since 0 is the starting point (left-most position) and we have to cover it. By checking all the sections that starts &amp;lt;= 0, we will know the how long we can reach to the right. For example, in example 3, we have &lt;code&gt;[0,1], [0,2], [0,3], [0,4]&lt;/code&gt;. Then in next step, we could reach any sections that start &amp;lt;= 4. So we will loop through all the sections again and find how long we can reach to the right. If we have &lt;code&gt;[2,9]&lt;/code&gt; and &lt;code&gt;[4,8]&lt;/code&gt;, we will know we can reach 9.&lt;/p&gt;
+
+&lt;p&gt;So in each scan, we will know how far we can reach and once we reach further than T or we can&amp;rsquo;t move, we finished scan and return the result.&lt;/p&gt;
+
+&lt;h2 id=&#34;algorithm&#34;&gt;Algorithm&lt;/h2&gt;
+
+&lt;h3 id=&#34;method-1&#34;&gt;Method 1:&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def video_stitching(clips, T):
+    curr_reached = 0
+    count = 0
+
+    while curr_reached &amp;lt; T:
+        next_reached = curr_reached
+        for start, end in clips:
+            if start &amp;lt;= curr_reached and end &amp;gt; next_reached:
+                next_reached = end
+        count += 1
+        if next_reached == curr_reached:
+            count = -1
+            break
+        else:
+            curr_reached = next_reached
+
+    return count
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Time complexity: in the worst case, we move one section by one section and need to loop through every section for each section, so \( O(N^2) \)&lt;/p&gt;
+
+&lt;h3 id=&#34;method-2&#34;&gt;Method 2:&lt;/h3&gt;
+
+&lt;p&gt;First we sort this clips based on start time (end time doesn&amp;rsquo;t matter because we will scan all of them). Then during the loop, we will keep record of how far we can go in next round and stop at the section whose start is greater than our current reached point (so that we can concatenate). So in next round, we start at where we stopped and do the same thing.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def video_stitching2(clips, T):
+    clips.sort()
+    curr_reached = 0
+    count = 0
+    pos = 0
+
+    while pos &amp;lt; len(clips) and curr_reached &amp;lt; T:
+        next_reached = curr_reached
+        while pos &amp;lt; len(clips) and clips[pos][0] &amp;lt;= curr_reached:
+            next_reached = max(next_reached, clips[pos][1])
+            pos += 1
+        count += 1
+        if next_reached == curr_reached:
+            break
+        else:
+            curr_reached = next_reached
+
+    return count if curr_reached &amp;gt;= T else -1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Time complexity: the scan is \( O(N) \) but sorting is \( O(NlogN) \). So overall the time complexity is \( O(NlogN) \)&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Pour Water</title>
+      <link>https://ericliu03.github.io/posts/2019/04/pour_water/</link>
+      <pubDate>Sun, 07 Apr 2019 14:51:09 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/pour_water/</guid>
+      <description>
+
+&lt;p&gt;This is a question from Airbnb onsite interview, also could be found on &lt;a href=&#34;https://leetcode.com/problems/pour-water/&#34; target=&#34;_blank&#34;&gt;leetcode&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;question&#34;&gt;Question:&lt;/h2&gt;
+
+&lt;p&gt;We are given an elevation map, &lt;code&gt;heights[i]&lt;/code&gt; representing the height of the terrain at that index. The width at each index is 1. After V units of water fall at index K, how much water is at each index?&lt;/p&gt;
+
+&lt;h3 id=&#34;assumptions&#34;&gt;Assumptions:&lt;/h3&gt;
+
+&lt;p&gt;Now, you should ask some clarify questions and make some assumptions of this questions. There are a lot of good solutions and explanations on &lt;a href=&#34;https://leetcode.com/problems/pour-water/solution/&#34; target=&#34;_blank&#34;&gt;leetcode&lt;/a&gt; so I will have a different version of the assumption here.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;If the droplet would eventually fall by moving &lt;strong&gt;right&lt;/strong&gt;, then move &lt;strong&gt;right&lt;/strong&gt;.&lt;/li&gt;
+&lt;li&gt;Otherwise, if the droplet would eventually fall by moving &lt;strong&gt;left&lt;/strong&gt;, then move &lt;strong&gt;left&lt;/strong&gt;.&lt;/li&gt;
+&lt;li&gt;Water will move as many as possible.&lt;/li&gt;
+&lt;li&gt;However, if the eventually fall position is the first or last position of the map, the water drop will overflow and disappear.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Here, &lt;strong&gt;&amp;ldquo;eventually fall&amp;rdquo;&lt;/strong&gt; means that the droplet will eventually be at a lower level if it moves in that direction. Also, &amp;ldquo;level&amp;rdquo; means the height of the terrain plus any water in that column.&lt;/p&gt;
+
+&lt;p&gt;If there&amp;rsquo;s no place for water to eventually fall without overflow, then&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;The water drop will overflow either overflow from left or right.&lt;/li&gt;
+&lt;li&gt;Otherwise, it will stay at the right most possible position.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;examples&#34;&gt;Examples:&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code&gt;Input: heights = [2,1,1,2,1,2,2], V = 4, K = 3
+Output: [2,2,2,3,2,2,2]
+Steps:
+1. [2,1,1,2,2,2,2]
+2. [2,2,1,2,2,2,2]
+3. [2,2,2,2,2,2,2]
+4. [2,2,2,2,2,2,2] (overflow)
+
+Input: heights = [1,2,3,4], V = 1, K = 2
+Output: [1,2,3,4]
+Steps:
+1. [1,2,3,4] (overflow)
+
+Input: heights = [2,1,1,4], V = 3, K = 1
+Output: [2,2,2,4]
+Steps:
+1. [2,1,2,4]
+1. [2,2,2,4]
+1. [2,2,2,4] (overflow)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;analysis&#34;&gt;Analysis&lt;/h2&gt;
+
+&lt;p&gt;With these assumptions, this question is a bit complicated than the one in leetcode. We need to explicitly deal with some conditions. For example, instead of overflow, we have high walls on both sides, we don&amp;rsquo;t need to care about whether we will overflow or not.&lt;/p&gt;
+
+&lt;h3 id=&#34;conditions&#34;&gt;Conditions&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;On right side find the 1. right most position, 2. lowest level, 3.water can flow there (water can&amp;rsquo;t flow up)&lt;/li&gt;
+&lt;li&gt;Do the same on the left side.&lt;/li&gt;
+&lt;li&gt;Check if we overflow: checking the level of the position we find on both left and right sides. One in overflow position and the other is either in overflow position or the level of that position is not lower than dropping position(V), then we will overflow.&lt;/li&gt;
+&lt;li&gt;Otherwise, find the correct position, it should be the one on right side, unless the right position is not a &lt;strong&gt;&amp;lsquo;eventually fall&amp;rsquo;&lt;/strong&gt; position while the one on the left is.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;coding&#34;&gt;Coding&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def pour_water(elevation, drop_count, drop_pos):
+    n = len(elevation)
+    for _ in range(drop_count):
+        right_pos = drop_pos
+        left_pos = drop_pos
+
+        while right_pos + 1 &amp;lt; n and elevation[right_pos + 1] &amp;lt;= elevation[right_pos]:
+            right_pos += 1
+        while left_pos - 1 &amp;gt;= 0 and elevation[left_pos - 1] &amp;lt;= elevation[left_pos]:
+            left_pos -= 1
+
+        next_pos = right_pos
+        if (right_pos == n - 1 and left_pos == 0) \
+                or (right_pos == n - 1 and elevation[left_pos] == elevation[drop_pos]) \
+                or (left_pos == 0 and elevation[right_pos] == elevation[drop_pos]):
+            continue
+        elif elevation[right_pos] == elevation[drop_pos] and elevation[left_pos] &amp;lt; elevation[drop_pos]:
+            next_pos = left_pos
+
+        elevation[next_pos] += 1
+    return elevation
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;tips&#34;&gt;Tips&lt;/h3&gt;
+
+&lt;p&gt;When scanning using while loop, we can check the value on next index before moving forward. In this way, our result index will be the last one that satisfy the while condition. Be attention that the first index is not checked.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Create tree from tuples</title>
+      <link>https://ericliu03.github.io/posts/2019/04/remove_undirect_edge/</link>
+      <pubDate>Sat, 06 Apr 2019 16:55:31 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/remove_undirect_edge/</guid>
+      <description>
+
+&lt;p&gt;This is a coding problem from Uber onsite interview found &lt;a href=&#34;https://www.1point3acres.com/bbs/thread-502555-1-1.html&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;question&#34;&gt;Question:&lt;/h3&gt;
+
+&lt;p&gt;Given a list of pairs (tuples), each of them represents a connection from parent to it&amp;rsquo;s child in a tree. In this list, nodes will have edges not only for their direct children, but also all of it&amp;rsquo;s descendants (i.e. children&amp;rsquo;s children, and their children etc).&lt;/p&gt;
+
+&lt;p&gt;If we have the following tree as an example:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;    A
+   / \
+  B   C
+ / \
+ D  E
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then the list given it will be&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; [(A,B), (A,D), (A,E), (A,C), (B,D), (B,E)]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can assume the tuples given will result in a valid tree. Use this list to construct a tree.&lt;/p&gt;
+
+&lt;h3 id=&#34;analysis&#34;&gt;Analysis&lt;/h3&gt;
+
+&lt;p&gt;Intuitively, what we want to do is to remove the connections &lt;em&gt;a -&amp;gt; b&lt;/em&gt; while a is not the node&amp;rsquo;s parent in the tree. The way to distinguish those connections is to find out if there&amp;rsquo;s another way to connect a -&amp;gt; b. If there is any, saying a -&amp;gt; a&amp;rsquo; -&amp;gt; b, then we know b&amp;rsquo;s parent is a&amp;rsquo; instead a then we should remove a -&amp;gt; b.&lt;/p&gt;
+
+&lt;p&gt;From a different perspective, if we imagine the tuples in the list are the edges in a directed graph, then we want is a &lt;a href=&#34;https://en.wikipedia.org/wiki/Transitive_reduction&#34; target=&#34;_blank&#34;&gt;&lt;strong&gt;transitive reduction&lt;/strong&gt;&lt;/a&gt; of the original graph (represented by all the edges). The transitive reduction of a graph contains &lt;em&gt;the fewest possible edges that has the same reachability relation as the original graph, by discarding the edges u → v for which G also contains a longer path connecting the same two vertices.&lt;/em&gt; In this way, the transitive reduction we generated will be the tree the question asked.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;list given is a &lt;strong&gt;partially ordered set&lt;/strong&gt; of a &lt;a href=&#34;https://en.wikipedia.org/wiki/Directed_acyclic_graph&#34; target=&#34;_blank&#34;&gt;&lt;strong&gt;DAG&lt;/strong&gt; (Directed Acyclic Graph)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;You can also find it &lt;a href=&#34;https://algs4.cs.princeton.edu/42digraph/&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt; at item 38 in &lt;em&gt;Web Exercises&lt;/em&gt; section.&lt;/li&gt;
+&lt;li&gt;This question is a &lt;strong&gt;tree&lt;/strong&gt; problem, but actually it&amp;rsquo;s asking for a solution that generates the transitive reduction of a &lt;strong&gt;graph&lt;/strong&gt;. It&amp;rsquo;s important to &lt;em&gt;look beyond the surface&lt;/em&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;algorithm&#34;&gt;Algorithm&lt;/h3&gt;
+
+&lt;h4 id=&#34;method-0-dfs&#34;&gt;Method 0: DFS&lt;/h4&gt;
+
+&lt;p&gt;Following the intuitive algorithm, we could loop through every node &lt;strong&gt;u&lt;/strong&gt; in the graph and remove the edges &lt;strong&gt;u-&amp;gt;v&lt;/strong&gt; if there are other paths that connect from &lt;strong&gt;u&lt;/strong&gt; to &lt;strong&gt;v&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import collections
+
+def generate_tree0(edges):
+
+    children = collections.defaultdict(set)
+    nodes = set()
+    for u, v in edges:
+        children[u].add(v)
+        nodes.add(u)
+        nodes.add(v)
+
+    def dfs(start, target):
+        if start == target:
+            return True
+        result = False
+        for next_node in children[start]:
+            # in case we have edge that points to a node itself
+            if next_node != start:
+                result = result or dfs(next_node, target)
+        return result
+
+    for node in nodes:
+        for child in list(children[node]):
+            found = False
+            for other_child in list(children[node]):
+                if other_child != child and dfs(other_child, child):
+                    found = True
+                    break
+            if found:
+                children[node].remove(child)
+
+    return children
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Complexity:
+ If we have N nodes, for each node we have to go to every other nodes in worst case so time complexity should be \( O(N^2) \).&lt;/p&gt;
+
+&lt;h4 id=&#34;method-1-topological-sort&#34;&gt;Method 1: Topological Sort&lt;/h4&gt;
+
+&lt;p&gt;We want to remove the edges that connects u-&amp;gt;v if there are other longer paths. From another perspective, we want to keep the path from &lt;strong&gt;root -&amp;gt; v&lt;/strong&gt; with longest path. From the description we a vertex will have a edge to all of it&amp;rsquo;s decedents, which means a vertex will have all the edges from all of it&amp;rsquo;s ancestors (indegree[v] = len(path_from_root). If we order the edges by the distance in the longest path, then we only keep the closest one. Here we can use &lt;a href=&#34;https://en.wikipedia.org/wiki/Topological_sorting&#34; target=&#34;_blank&#34;&gt;Topological sort&lt;/a&gt; to get the order. In the process of sorting, in each round we will have node &lt;strong&gt;u&lt;/strong&gt; that have no edge from others to u (i.e. 0 &lt;a href=&#34;https://en.wikipedia.org/wiki/Directed_graph#Indegree_and_outdegree&#34; target=&#34;_blank&#34;&gt;indegree&lt;/a&gt;). For every one of it&amp;rsquo;s neighbors &lt;strong&gt;v&lt;/strong&gt; it connects &lt;em&gt;to&lt;/em&gt;, if there&amp;rsquo;s any other nodes &lt;strong&gt;x&lt;/strong&gt; connects &lt;strong&gt;to&lt;/strong&gt; v, then it means there will be longer path(s) that connects from &lt;strong&gt;u&lt;/strong&gt; to &lt;strong&gt;v&lt;/strong&gt;, then the edge u-&amp;gt;v should be discarded.&lt;/p&gt;
+
+&lt;p&gt;We will use two maps to keep track of the indegrees and outdegrees of a node, and do edits in the process of sorting.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import collections
+
+def generate_tree0(edges):
+    indegrees = collections.defaultdict(int)
+    outdegrees = collections.defaultdict(set)
+
+    for u, v in edges:
+        indegrees[v] += 1
+        if u not in indegrees:
+            indegrees[u] = 0
+        outdegrees[u].add(v)
+
+    queue = [u for u, count in indegrees.items() if indegrees[u] == 0]
+    while queue:
+        curr_node = queue.pop(0)
+        for neighbor in list(outdegrees[curr_node]):
+            if indegrees[neighbor] == 1:
+                queue.append(neighbor)
+            else:
+                indegrees[neighbor] -= 1
+                outdegrees[curr_node]remove(neighbor)
+    return outdegrees
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Complexity:
+ If we have N nodes, for each node we have to go to every other nodes in worst case so time complexity should be \( O(N) \). .&lt;/p&gt;
+
+&lt;h4 id=&#34;other-thoughts-bottom-up&#34;&gt;other thoughts: bottom up&lt;/h4&gt;
+
+&lt;p&gt;Goal is still the same, just this time we check our parent&amp;rsquo;s children. We first pick the nodes with zero-outdegree (i.e leaf nodes) and check one by one. If the a node &lt;strong&gt;v&lt;/strong&gt; is the only child of it&amp;rsquo;s parent &lt;strong&gt;u&lt;/strong&gt;, then we should keep that edge &lt;strong&gt;u-&amp;gt;v&lt;/strong&gt; and remove all other edges that connected to &lt;em&gt;v&lt;/em&gt;. This could be seen as a variation of topological sort.&lt;/p&gt;
+
+&lt;p&gt;However, the problem is that we don&amp;rsquo;t know which parent should we keep. For example, we have a leaf node v and it have parents u1 and u2, then which one should we keep? from the desription above, if we keep the parent that has only one child, then what about the situations that v has a sibling v2? i.e u2 -&amp;gt; v and u2 -&amp;gt; v2, then we should keep u2 as the parent.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Interviews</title>
+      <link>https://ericliu03.github.io/posts/2019/04/interviews/</link>
+      <pubDate>Fri, 05 Apr 2019 09:20:41 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/interviews/</guid>
+      <description>&lt;p&gt;This is actually why (or saying the trigger) I create a website and begin blogging.&lt;/p&gt;
+
+&lt;p&gt;Recently I was preparing for changing job. Inevitably I have to prepare for the coding interviews. It was funny that the recruiters from all of the companies I interviewed with suggests online coding websites to get prepared, and first ones of every list is &lt;a href=&#34;www.leetcode.com&#34; target=&#34;_blank&#34;&gt;leetcode.com&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;During these 3 months in preparing, I was discussing with my teammates/friends about what we want to see from interviews as interviewers. We agreed that the thought process is most important one, and then it&amp;rsquo;s the problem itself, since it&amp;rsquo;s possible to get stuck, or go some circles if you first met this problem. No one will need those and thus and practice on those algorithm problems in daily work.&lt;/p&gt;
+
+&lt;p&gt;But I think I&amp;rsquo;m wrong, or at least not that accurate on the percentage of characteristic they would like to see from you during the interviews. Let&amp;rsquo;s list what areas we should have as a developer:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;thought process: the way you approach a new problem, and how you solve it&lt;/li&gt;
+&lt;li&gt;communication: can you make others clear about your thought&lt;/li&gt;
+&lt;li&gt;algorithm and data structure: basically CS knowledge&lt;/li&gt;
+&lt;li&gt;coding style: naming, methods, spaces&lt;/li&gt;
+&lt;li&gt;result correctness:&lt;/li&gt;
+&lt;li&gt;tests cases: how do you want to test your program to ensure it&amp;rsquo;s correct&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;I think I put too much weight on 1 and 2 because I thought that&amp;rsquo;s the part that shows how a person works in real world, and whether a person is a good cooperator. But yes, that&amp;rsquo;s my thoughts, or the thoughts from the people I know.&lt;/p&gt;
+
+&lt;p&gt;In a 45 or 60 minute interview, it&amp;rsquo;s hard to express all of the area listed above, which you have to, so how? In my opinion the part I can work on, and improve is the speed of writing coding. &lt;strong&gt;So that I could write code so quickly enough to still keep the time and effort I will use to communicate and explain, to test and walk through the algorithm.&lt;/strong&gt; It&amp;rsquo;s not because it&amp;rsquo;s a mandatory in work (and my friend and I thought it&amp;rsquo;s kind of ridiculous), but it&amp;rsquo;s for the interview to be perfect(无懈可击) (as much as possible) that people won&amp;rsquo;t have something bad to put on their feedbacks.&lt;/p&gt;
+
+&lt;p&gt;Why? because you don&amp;rsquo;t know the interviewers, it&amp;rsquo;s possible some people want perfectness of code, some people think communication and collaboration is the most important thing, while others like to see clean code and meaningful names. The bad thing is that you don&amp;rsquo;t know what they want, so all you can do is give them all.&lt;/p&gt;
+
+&lt;p&gt;This blog comes an action item of my reviews the interview I&amp;rsquo;ve been through. I will keep working on the algorithms as a long lasting background job to write down my journey on this. I will try to dive deep on the algorithms, complexity analysis and do clear explanations.&lt;/p&gt;
+
+&lt;p&gt;You are not guaranteed to succeed, but you are guaranteed not if you don&amp;rsquo;t try. Do my part, and accept the rest.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Create Web</title>
+      <link>https://ericliu03.github.io/posts/2019/04/create-web/</link>
+      <pubDate>Fri, 05 Apr 2019 09:01:37 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/2019/04/create-web/</guid>
+      <description>
+
+&lt;p&gt;This is technically first post in this blog. I thought it&amp;rsquo;s worth to write down the process of creating this static website.&lt;/p&gt;
+
+&lt;p&gt;I choose to use English as the language in this blog, which might be helpful in future. Or I may switch to Chinese anyway.&lt;/p&gt;
+
+&lt;h2 id=&#34;steps&#34;&gt;Steps&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Searched a little bit in zhihu.com and found this post about &lt;a href=&#34;https://blog.coderzh.com/2015/08/29/hugo/&#34; target=&#34;_blank&#34;&gt;create website using huge&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;quick start with hugo: &lt;a href=&#34;https://gohugo.io/getting-started/quick-start/&#34; target=&#34;_blank&#34;&gt;https://gohugo.io/getting-started/quick-start/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;and hosting on github: &lt;a href=&#34;https://gohugo.io/hosting-and-deployment/hosting-on-github/&#34; target=&#34;_blank&#34;&gt;https://gohugo.io/hosting-and-deployment/hosting-on-github/&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;It&amp;rsquo;s quite simple to create a simple page, but there sohuld be more features to add later. Let&amp;rsquo;s see if there&amp;rsquo;s any needed, and add them then.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>My First Post</title>
+      <link>https://ericliu03.github.io/posts/my-first-post/</link>
+      <pubDate>Fri, 05 Apr 2019 08:31:26 -0700</pubDate>
+      
+      <guid>https://ericliu03.github.io/posts/my-first-post/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
