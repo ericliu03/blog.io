@@ -10,10 +10,10 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 paginate = 5
 
 # Enable comments by entering your Disqus shortname
-disqusShortname = "ericliu03-github"
+disqusShortname = "ericliu03-blog"
 
 # Enable analytics by entering your Google Analytics tracking ID
-googleAnalytics = ""
+googleAnalytics = "UA-138995517-1"
 
 # Default language to use (if you setup multilingual support)
 defaultContentLanguage = "en"
