@@ -1,87 +1,59 @@
-theme = "aether"
+theme = "mainroad"
 baseURL = "https://ericliu03.github.io/"
 languageCode = "en-us"
 title = "Yang's Blog"
-rssLimit = 10
+rssLimit = 5
+paginate = "5" # Number of posts per page
+pygmentsCodeFences = true
 
-enableEmoji = true
-footnotereturnlinkcontents = "<sup>^</sup>"
-ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
-paginate = 5
-
-# Enable comments by entering your Disqus shortname
+googleAnalytics = "UA-138995517-1"
 disqusShortname = "ericliu03-blog"
 
-# Enable analytics by entering your Google Analytics tracking ID
-googleAnalytics = "UA-138995517-1"
-
-# Default language to use (if you setup multilingual support)
-defaultContentLanguage = "en"
-defaultContentLanguageInSubdir = false
-
-[taxonomies]
-   tag = "tags"
-   category = "categories"
+[Author] # Used in authorbox
+  name = "Eric"
+  bio = "Software Engineer, with interests in algorithm"
+  avatar = "img/avatar1.png"
 
 
-[blackfriday]
-  hrefTargetBlank = true
+[Params]
+  subtitle = "About Algorithms" # Subtitle of your site. Used in site header
+  description = "Eric's Personal blog about tech" # Site description. Used in meta description
+  #copyright = "Yang Liu" # copyright holder, otherwise will use site title
 
-[params]
-  # Color theme.
-  #   Choose from `default`, `ocean`, `dark`, `forest`, `coffee` and `1950s`.
-  color_theme = "default"
+  opengraph = true # Enable OpenGraph if true
+  twitter_cards = true # Enable Twitter Cards if true
+  readmore = false # Show "Read more" button in list if true
+  authorbox = true # Show authorbox at bottom of pages if true
+  toc = false # Enable Table of Contents
+  post_navigation = true # Show post navigation at bottom of pages if true
+  post_meta = ["date", "categories", "translations"] # Order of post meta information
+  #mainSections = ["post", "blog", "news"] # specify section pages to show on home page and the "Recent articles" widget
+  dateformat = "2006-01-02" # change the format of dates
+  mathjax = true # Enable MathJax
+  mathjaxPath = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" # Specify MathJax path
+  #mathjaxConfig = "TeX-AMS-MML_HTMLorMML" # Specify MathJax config
+  customCSS = ["css/custom.css"] # Include custom CSS files
 
-  # Font style.
-  #   Choose from `default` or `classic`.
-  font = "default"
 
-  # Enable Keybase in Contact section by entering your keybase.io username.
-  keybase = ""
+[Params.sidebar]
+  home = "right" # Configure layout for home page
+  list = "left"  # Configure layout for list pages
+  single = true # Configure layout for single pages
+  # Enable widgets in given order
+  widgets = ["search", "recent", "categories", "taglist", "social", "languages"]
 
-  # Date format (refer to Go's date format: http://flippinggodateformat.com )
-  #   Examples: "Mon, Jan 2, 2006" or "2006-01-02"
-  date_format = "Jan 2, 2006"
+[Params.widgets]
+  recent_num = 5 # Set the number of articles in the "Recent articles" widget
+  tags_counter = true # Enable counter for each tag in "Tags" widget (disabled by default)
 
-  # Show estimated reading time for posts?
-  reading_time = true
-
-  # Enable global LaTeX math rendering?
-  #   If false, you can enable it locally on a per page basis.
-  math = true
-
-  # Highlight.js options
-  #   highlight
-  #     Enable global source code highlighting?  If false, you can
-  #     override it for a particular page in that page's preamble.
-  #
-  #     Example: highlight = true
-  #
-  #   highlight_languages
-  #     Add support for highlighting additional languages. Support for
-  #     languages mentioned here will be included in all pages. You
-  #     can also set this variable for a particular page in that
-  #     page's preamble.
-  #
-  #     Example: highlight_languages = ["go", "lisp", "ocaml"]
-  #
-  #   highlight_style
-  #     Choose a different CSS style for highlighting source
-  #     code. Setting this option in a page's preamble has no
-  #     effect.
-  #
-  #     Example: highlight_style = "github-gist"
-  #
-  #   highlight_version
-  #     Choose the version of highlight.js you want. Setting this
-  #     option in a page's preamble has no effect.
-  #
-  #     Example: highlight_version = "9.9.0"
-  #
-  #   For the list of supported languages, styles, and versions, see:
-  #   https://cdnjs.com/libraries/highlight.js/
-  #
-  #   For more info on the highlighting options, see:
-  #   https://gcushen.github.io/hugo-academic-demo/post/writing-markdown-latex/#highlighting-options
-  highlight = true
-  highlight_languages = ["python","go"]
+[Params.widgets.social]
+  # Enable parts of social widget
+  # facebook = "username"
+  # twitter = "username"
+  # instagram = "username"
+  # linkedin = "username"
+  # telegram = "username"
+  # github = "username"
+  # gitlab = "username"
+  # bitbucket = "username"
+  # email = "example@example.com"
