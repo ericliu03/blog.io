@@ -6,11 +6,6 @@ draft: false
 tags:
   - "DP"
   - "graph"
-
-comments: true # Enable/disable Disqus comments. Default value: true
-authorbox: true # Enable authorbox for specific post
-toc: true # Optional, enable Table of Contents for specific post
-mathjax: true # Optional, enable MathJax for specific post
 ---
 
 ## Question
