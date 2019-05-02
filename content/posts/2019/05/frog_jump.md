@@ -2,10 +2,15 @@
 title: "Frog Jump"
 date: 2019-05-01T16:44:51-07:00
 description: ""
-dropCap: false
-displayInMenu: false
-displayInList: true
 draft: false
+tags:
+  - "DP"
+  - "graph"
+
+comments: true # Enable/disable Disqus comments. Default value: true
+authorbox: true # Enable authorbox for specific post
+toc: true # Optional, enable Table of Contents for specific post
+mathjax: true # Optional, enable MathJax for specific post
 ---
 
 ## Question
