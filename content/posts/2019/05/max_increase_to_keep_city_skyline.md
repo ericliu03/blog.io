@@ -1,5 +1,5 @@
 ---
-title: "Max Increase to Keep City Skyline"
+title: "[Leetcode 807] Max Increase to Keep City Skyline"
 description: ""
 date: "2019-05-03T16:22:13-07:00"
 thumbnail: ""
@@ -83,6 +83,7 @@ def maxIncreaseKeepingSkyline(self, grid: List[List[int]]) -> int:
 ```
 
 我们来分析一下这个代码：
+
 1. `map(max, grid)`是吧grid中的每个元素（也就是作为一行的一个list）求最大，生成的就是每行的最大值
 1. `map(max, zip(*grid))`，和之前一样，只不过先做了一个unzip，就是把grid的n行看做n个元素，然后每个元素的第i个sub元素拿出来，各自组成一个list。
 

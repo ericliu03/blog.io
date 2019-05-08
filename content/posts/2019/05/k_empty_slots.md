@@ -1,5 +1,5 @@
 ---
-title: "K Empty Slots"
+title: "[Leetcode 683] K Empty Slots"
 description: ""
 date: "2019-05-03T14:09:47-07:00"
 thumbnail: ""
