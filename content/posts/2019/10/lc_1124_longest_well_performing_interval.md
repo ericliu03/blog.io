@@ -1,5 +1,5 @@
 ---
-title: "[Leetcode 1124] Longest_well_performing_interval"
+title: "[Leetcode 1124] Longest Well Performing Interval"
 description: ""
 date: "2020-01-06T21:34:46-08:00"
 thumbnail: ""
