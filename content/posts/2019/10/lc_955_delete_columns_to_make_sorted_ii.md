@@ -1,5 +1,5 @@
 ---
-title: "Lc_955_delete_columns_to_make_sorted_ii"
+title: "[Leetcode 955] Delete Columns to Make Sorted II"
 description: ""
 date: "2020-01-08T21:24:40-08:00"
 thumbnail: ""
